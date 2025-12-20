@@ -33,3 +33,8 @@ Modeling + data pipeline will be added next.
 
 ## Notes
 This is a portfolio project scaffold. It is not a medical device and is not intended for diagnostic use.
+
+## Docs
+- Decision Log: `docs/decisions.md`
+- Model Card: `reports/model_card.md`
+

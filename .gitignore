@@ -9,3 +9,18 @@ __pycache__/
 
 # OS
 .DS_Store
+
+# Data & artifacts (keep folder via .gitkeep)
+data/raw/*
+data/processed/*
+data/external/*
+models/*
+reports/figures/*
+!data/**/.gitkeep
+!models/.gitkeep
+!reports/figures/.gitkeep
+!notebooks/.gitkeep
+!docs/.gitkeep
+
+# Env files
+.env

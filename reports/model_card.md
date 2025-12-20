@@ -1,4 +1,4 @@
-# Model Card — sease Predictor Model (Placeholder)
+# Model Card — Heart Disease Predictor Model (Placeholder)
 
 ## Model Details
 - **Model name:** Heart Disease Predictor Model

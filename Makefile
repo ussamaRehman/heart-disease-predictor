@@ -1,4 +1,4 @@
-.PHONY: setup fmt lint type test check data check-data preprocess split pipeline
+.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline
 
 setup:
 	uv sync --dev
@@ -31,3 +31,6 @@ split:
 
 # End-to-end (no model training yet)
 pipeline: setup data check-data preprocess split check
+
+train-baseline: preprocess split
+	PYTHONPATH=src uv run python -m mlproj.models.train_baseline

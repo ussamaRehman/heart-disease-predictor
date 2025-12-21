@@ -34,6 +34,8 @@ def _ensure_target(df: pd.DataFrame) -> pd.DataFrame:
     target_int: pd.Series = target_series.astype("int64")
     out = df.copy()
     out["target"] = (target_int > 0).astype(int)
+    if "num" in out.columns:
+        out = out.drop(columns=["num"])
     return out
 
 

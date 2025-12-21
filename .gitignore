@@ -24,3 +24,8 @@ reports/figures/*
 
 # Env files
 .env
+
+# Model artifacts
+models/*.joblib
+!models/baseline_logreg.joblib
+

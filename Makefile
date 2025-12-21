@@ -1,10 +1,13 @@
-.PHONY: setup fmt lint type test check data
+.PHONY: setup fmt lint type test check data check-data
 
 setup:
 	uv sync --dev
 
 data:
 	uv run python scripts/download_uci_heart_disease.py
+
+check-data:
+	uv run python scripts/check_data.py
 
 fmt:
 	uv run ruff format .

@@ -1,4 +1,4 @@
-.PHONY: setup fmt lint type test check data check-data
+.PHONY: setup fmt lint type test check data check-data preprocess
 
 setup:
 	uv sync --dev
@@ -22,3 +22,6 @@ test:
 	uv run pytest
 
 check: fmt lint type test
+
+preprocess:
+	PYTHONPATH=src uv run python -m mlproj.data.make_dataset

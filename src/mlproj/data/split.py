@@ -16,6 +16,7 @@ Defaults:
 from __future__ import annotations
 
 from pathlib import Path
+from typing import cast
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -39,24 +40,30 @@ def main(
     if "target" not in df.columns:
         raise SystemExit("Expected column `target` not found in processed dataset.")
 
-    # First split off test
-    train_val, test = train_test_split(
+    y: pd.Series = df["target"]
+
+    # 1) Split off test
+    train_val_any, test_any = train_test_split(
         df,
         test_size=test_size,
         random_state=seed,
-        stratify=df["target"],
+        stratify=y,
     )
+    train_val = cast(pd.DataFrame, train_val_any)
+    test = cast(pd.DataFrame, test_any)
 
-    # Split remaining into train/val
-    # val_size is relative to full dataset; convert to relative of train_val
+    # 2) Split remaining into train/val
     val_rel = val_size / (1.0 - test_size)
+    y_tv: pd.Series = train_val["target"]
 
-    train, val = train_test_split(
+    train_any, val_any = train_test_split(
         train_val,
         test_size=val_rel,
         random_state=seed,
-        stratify=train_val["target"],
+        stratify=y_tv,
     )
+    train = cast(pd.DataFrame, train_any)
+    val = cast(pd.DataFrame, val_any)
 
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
@@ -70,8 +77,12 @@ def main(
     test.to_csv(test_path, index=False)
 
     def _dist(x: pd.DataFrame) -> str:
-        vc = x["target"].value_counts(normalize=True).sort_index()
-        return ", ".join([f"{k}:{v:.3f}" for k, v in vc.items()])
+        vc = x["target"].astype(int).value_counts(normalize=True).sort_index()
+        parts: list[str] = []
+        for k, v in vc.items():
+            k_int = int(cast(int, k))
+            parts.append(f"{k_int}:{float(v):.3f}")
+        return ", ".join(parts)
 
     print("Saved splits:")
     print(f"  train: {train_path} | n={len(train)} | target dist: {_dist(train)}")

@@ -13,6 +13,10 @@ Writes:
 
 from __future__ import annotations
 
+import hashlib
+import json
+import subprocess
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import cast
 
@@ -36,6 +40,28 @@ from sklearn.preprocessing import StandardScaler
 DATA_DIR = Path("data/processed")
 REPORTS_DIR = Path("reports")
 MODELS_DIR = Path("models")
+
+
+def _sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _git_meta() -> dict[str, str]:
+    # Best-effort: script should still run outside git
+    try:
+        sha = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], text=True).strip()
+    except Exception:
+        sha = "unknown"
+    try:
+        subprocess.check_call(["git", "diff", "--quiet"])
+        dirty = "false"
+    except Exception:
+        dirty = "true"
+    return {"git_sha": sha, "git_dirty": dirty}
 
 
 def load_split(name: str) -> pd.DataFrame:
@@ -148,6 +174,63 @@ def main() -> None:
     report.append(f"```\n{classification_report(y_test, test_pred, zero_division='warn')}\n```\n")
 
     report_path.write_text("".join(report), encoding="utf-8")
+
+    # --- Run-scoped outputs + metadata ---
+
+    git = _git_meta()
+
+    run_ts = datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
+
+    run_id = f"{run_ts}-{git['git_sha']}"
+
+    report_dir = Path("reports/runs") / run_id
+
+    model_dir = Path("models/runs") / run_id
+
+    report_dir.mkdir(parents=True, exist_ok=True)
+
+    model_dir.mkdir(parents=True, exist_ok=True)
+
+    metrics_json_path = report_dir / "metrics.json"
+
+    latest_report_md = Path("reports/latest_baseline_metrics.md")
+
+    latest_report_json = Path("reports/latest_baseline_metrics.json")
+
+    latest_model = Path("models/latest_baseline_logreg.joblib")
+
+    dataset_hashes: dict[str, str] = {}
+
+    for _name, _path in {
+        "processed_heart_csv_sha256": Path("data/processed/heart.csv"),
+        "train_csv_sha256": Path("data/processed/train.csv"),
+        "val_csv_sha256": Path("data/processed/val.csv"),
+        "test_csv_sha256": Path("data/processed/test.csv"),
+    }.items():
+        try:
+            dataset_hashes[_name] = _sha256_file(_path)
+
+        except Exception:
+            dataset_hashes[_name] = "unavailable"
+
+    payload = {
+        "run_id": run_id,
+        **git,
+        "val_metrics": val_metrics,
+        "test_metrics": test_metrics,
+        "dataset_hashes": dataset_hashes,
+    }
+    metrics_json_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+    # Write latest copies for convenience
+    latest_report_md.write_text(report_path.read_text(encoding="utf-8"), encoding="utf-8")
+    latest_report_json.write_text(metrics_json_path.read_text(encoding="utf-8"), encoding="utf-8")
+
+    # Also keep a latest model copy (gitignored)
+    try:
+        latest_model.write_bytes(model_path.read_bytes())
+    except Exception:
+        pass
 
     print("Training complete.")
     print(f"Saved model: {model_path}")

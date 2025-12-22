@@ -29,3 +29,8 @@ reports/figures/*
 models/*.joblib
 !models/baseline_logreg.joblib
 
+# Run outputs (do not commit)
+reports/runs/
+reports/latest_*.md
+reports/latest_*.json
+models/runs/

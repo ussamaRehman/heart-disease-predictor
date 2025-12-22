@@ -33,4 +33,5 @@ models/*.joblib
 reports/runs/
 reports/latest_*.md
 reports/latest_*.json
+reports/predictions_*.csv
 models/runs/

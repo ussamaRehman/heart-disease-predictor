@@ -38,11 +38,7 @@ split:
 # End-to-end (no model training yet)
 pipeline: setup data check-data preprocess split check
 
-train-baseline: preprocess split
-	PYTHONPATH=src uv run python -m mlproj.models.train_baseline
+train-baseline: preprocess split models/baseline_logreg.joblib
 
-# End-to-end including baseline model
-ml: pipeline train-baseline
-
-predict-baseline: preprocess split train-baseline
+predict-baseline: preprocess split models/baseline_logreg.joblib
 	PYTHONPATH=src uv run python -m mlproj.inference.predict_baseline --input $(INPUT) --out $(OUT) --threshold $(THRESH)

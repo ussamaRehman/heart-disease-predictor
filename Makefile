@@ -19,7 +19,7 @@ type:
 	uv run pyright
 
 test:
-	uv run pytest
+	PYTHONPATH=src uv run pytest
 
 check: fmt lint type test
 

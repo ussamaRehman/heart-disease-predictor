@@ -34,7 +34,18 @@ Modeling + data pipeline will be added next.
 ## Notes
 This is a portfolio project scaffold. It is not a medical device and is not intended for diagnostic use.
 
+
+## Run end-to-end (single command)
+
+```bash
+make ml
+```
+
+### Outputs
+- Model artifact: `models/baseline_logreg.joblib`
+- Metrics report: `reports/baseline_metrics.md`
+- Processed data + splits: `data/processed/heart.csv`, `data/processed/train.csv`, `data/processed/val.csv`, `data/processed/test.csv`
+
 ## Docs
 - Decision Log: `docs/decisions.md`
 - Model Card: `reports/model_card.md`
-

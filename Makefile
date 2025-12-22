@@ -29,7 +29,7 @@ test:
 
 check: fmt lint type test
 
-preprocess:
+preprocess: data
 	PYTHONPATH=src uv run python -m mlproj.data.make_dataset
 
 split:

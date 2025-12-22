@@ -1,62 +1,49 @@
-"""
-Create a processed dataset from the raw UCI Heart Disease CSV.
-
-Reads:
-  data/raw/uci_heart_disease.csv
-
-Writes:
-  data/processed/heart.csv
-
-Processing rules:
-- Ensures `target` is int 0/1.
-- Median-imputes missing values in numeric columns (excluding target).
-"""
-
 from __future__ import annotations
 
 from pathlib import Path
 
 import pandas as pd
 
-RAW_PATH_DEFAULT = "data/raw/uci_heart_disease.csv"
-OUT_PATH_DEFAULT = "data/processed/heart.csv"
-
 
 def _ensure_target(df: pd.DataFrame) -> pd.DataFrame:
-    if "target" not in df.columns:
-        raise ValueError("Expected column `target` not found. Run `make data` first.")
+    """
+    Ensure we have a binary `target` column.
 
-    # Ensure a clean numeric series
-    target_series: pd.Series = pd.to_numeric(df["target"], errors="coerce")
-    if pd.isna(target_series).any():
-        raise ValueError("`target` contains non-numeric or missing values.")
-
-    target_int: pd.Series = target_series.astype("int64")
+    Rules:
+    - If `target` exists, keep it (cast to int).
+    - Else if `num` exists, create target = (num > 0) and drop `num`.
+    - Else raise.
+    """
     out = df.copy()
-    out["target"] = (target_int > 0).astype(int)
+
+    if "target" in out.columns:
+        out["target"] = pd.to_numeric(out["target"], errors="coerce").fillna(0).astype(int)
+        if "num" in out.columns:
+            out = out.drop(columns=["num"])
+        return out
+
     if "num" in out.columns:
+        num_int = pd.to_numeric(out["num"], errors="coerce").fillna(0).astype(int)
+        out["target"] = (num_int > 0).astype(int)
         out = out.drop(columns=["num"])
-    return out
+        return out
+
+    raise ValueError("Expected `target` or `num` column not found.")
 
 
-def _median_impute_numeric(df: pd.DataFrame, exclude: list[str] | None = None) -> pd.DataFrame:
-    exclude = exclude or []
+def _median_impute_numeric(df: pd.DataFrame, *, exclude: list[str]) -> pd.DataFrame:
     out = df.copy()
-
     for col in out.columns:
         if col in exclude:
             continue
         if pd.api.types.is_numeric_dtype(out[col]):
-            s: pd.Series = out[col]
-            if pd.isna(s).any():
-                out[col] = s.fillna(s.median())
+            out[col] = out[col].fillna(out[col].median())
     return out
 
 
-def main(raw_path: str = RAW_PATH_DEFAULT, out_path: str = OUT_PATH_DEFAULT) -> None:
-    raw = Path(raw_path)
-    if not raw.exists():
-        raise SystemExit(f"Missing raw dataset: {raw}. Run `make data` first.")
+def main() -> None:
+    raw = Path("data/raw/uci_heart_disease.csv")
+    out_path = "data/processed/heart.csv"
 
     df = pd.read_csv(raw)
 

@@ -49,3 +49,12 @@ make ml
 ## Docs
 - Decision Log: `docs/decisions.md`
 - Model Card: `reports/model_card.md`
+
+## Run inference (baseline)
+
+```bash
+make predict-baseline
+```
+
+### Output
+- Predictions CSV (gitignored): `reports/predictions_baseline.csv`

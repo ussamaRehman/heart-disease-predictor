@@ -1,5 +1,11 @@
 .PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline predict-baseline
 
+# Defaults for inference
+INPUT ?= data/processed/test.csv
+OUT ?= reports/predictions_baseline.csv
+THRESH ?= 0.5
+
+
 setup:
 	uv sync --dev
 
@@ -39,4 +45,4 @@ train-baseline: preprocess split
 ml: pipeline train-baseline
 
 predict-baseline: preprocess split train-baseline
-	PYTHONPATH=src uv run python -m mlproj.inference.predict_baseline
+	PYTHONPATH=src uv run python -m mlproj.inference.predict_baseline --input $(INPUT) --out $(OUT) --threshold $(THRESH)

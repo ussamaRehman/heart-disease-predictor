@@ -34,3 +34,6 @@ pipeline: setup data check-data preprocess split check
 
 train-baseline: preprocess split
 	PYTHONPATH=src uv run python -m mlproj.models.train_baseline
+
+# End-to-end including baseline model
+ml: pipeline train-baseline

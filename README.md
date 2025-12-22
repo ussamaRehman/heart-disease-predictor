@@ -52,9 +52,11 @@ make ml
 
 ## Run inference (baseline)
 
-```bash
-make predict-baseline
-```
+    # default (uses test split)
+    make predict-baseline
+
+    # customize input/output/threshold
+    make predict-baseline INPUT=data/processed/val.csv OUT=reports/predictions_val.csv THRESH=0.7
 
 ### Output
-- Predictions CSV (gitignored): `reports/predictions_baseline.csv`
+- Predictions CSV (gitignored): `reports/predictions_*.csv`

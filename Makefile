@@ -9,36 +9,13 @@ THRESH ?= 0.5
 setup:
 	uv sync --dev
 
-data:
-	uv run python scripts/download_uci_heart_disease.py
+data: data/raw/uci_heart_disease.csv
 
-check-data:
-	uv run python scripts/check_data.py
+preprocess: data/processed/heart.csv
 
-fmt:
-	uv run ruff format .
+split: data/processed/train.csv data/processed/val.csv data/processed/test.csv
 
-lint:
-	uv run ruff check .
+train-baseline: models/baseline_logreg.joblib
 
-type:
-	uv run pyright
-
-test:
-	PYTHONPATH=src uv run pytest
-
-check: fmt lint type test
-
-preprocess: data
-	PYTHONPATH=src uv run python -m mlproj.data.make_dataset
-
-split:
-	PYTHONPATH=src uv run python -m mlproj.data.split
-
-# End-to-end (no model training yet)
-pipeline: setup data check-data preprocess split check
-
-train-baseline: preprocess split models/baseline_logreg.joblib
-
-predict-baseline: preprocess split models/baseline_logreg.joblib
+predict-baseline: $(INPUT) models/baseline_logreg.joblib
 	PYTHONPATH=src uv run python -m mlproj.inference.predict_baseline --input $(INPUT) --out $(OUT) --threshold $(THRESH)

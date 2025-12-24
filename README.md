@@ -85,4 +85,4 @@ make ml
     make sweep-thresholds SWEEP_INPUT=data/processed/val.csv SWEEP_PREDS=reports/predictions_val.csv SWEEP_OUT=reports/val_threshold_sweep.csv TMIN=0.1 TMAX=0.9 TSTEP=0.05
 
 ### Output
-- Threshold sweep CSV (gitignored):
+- Threshold sweep CSV (gitignored): `reports/threshold_sweep.csv`

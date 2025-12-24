@@ -64,4 +64,9 @@ $(OUT): $(INPUT) models/baseline_logreg.joblib
 clean-preds:
 	rm -f reports/predictions_*.csv
 
-eval-baseline: 
+eval-baseline: $(EVAL_OUT)
+
+$(EVAL_OUT): $(EVAL_INPUT) $(EVAL_PREDS)
+	mkdir -p $(dir $@)
+	PYTHONPATH=src uv run python -m mlproj.evaluation.eval_predictions --input $(EVAL_INPUT) --preds $(EVAL_PREDS) --out $@
+

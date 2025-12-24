@@ -1,4 +1,4 @@
-.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline
+.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds
 
 # Defaults for inference
 INPUT ?= data/processed/test.csv
@@ -8,6 +8,14 @@ THRESH ?= 0.5
 EVAL_INPUT ?= data/processed/test.csv
 EVAL_PREDS ?= reports/predictions_baseline.csv
 EVAL_OUT ?= reports/latest_eval.json
+
+SWEEP_INPUT ?= $(EVAL_INPUT)
+SWEEP_PREDS ?= $(EVAL_PREDS)
+SWEEP_OUT ?= reports/threshold_sweep.csv
+TMIN ?= 0.05
+TMAX ?= 0.95
+TSTEP ?= 0.05
+
 
 setup:
 	uv sync --dev
@@ -69,4 +77,10 @@ eval-baseline: $(EVAL_OUT)
 $(EVAL_OUT): $(EVAL_INPUT) $(EVAL_PREDS)
 	mkdir -p $(dir $@)
 	PYTHONPATH=src uv run python -m mlproj.evaluation.eval_predictions --input $(EVAL_INPUT) --preds $(EVAL_PREDS) --out $@
+
+sweep-thresholds: $(SWEEP_OUT)
+
+$(SWEEP_OUT): $(SWEEP_INPUT) $(SWEEP_PREDS)
+	mkdir -p $(dir $@)
+	PYTHONPATH=src uv run python -m mlproj.evaluation.sweep_thresholds --input $(SWEEP_INPUT) --preds $(SWEEP_PREDS) --out $@ --t-min $(TMIN) --t-max $(TMAX) --t-step $(TSTEP)
 

@@ -13,7 +13,26 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 
-from mlproj.evaluation.eval_predictions import _align_input_and_preds
+
+def _align_input_and_preds(
+    input_df: pd.DataFrame, preds_df: pd.DataFrame
+) -> tuple[pd.Series, pd.Series]:
+    if "target" not in input_df.columns:
+        raise ValueError("input must contain ground truth column 'target'")
+
+    if "proba_disease" in preds_df.columns:
+        proba = preds_df["proba_disease"]
+    elif "proba" in preds_df.columns:
+        proba = preds_df["proba"]
+    else:
+        raise ValueError("preds must contain probability column 'proba_disease' (or 'proba')")
+
+    y_true = input_df["target"]
+
+    if len(y_true) != len(proba):
+        raise ValueError(f"Row mismatch: input rows={len(y_true)} preds rows={len(proba)}")
+
+    return y_true, proba
 
 
 def sweep_thresholds(

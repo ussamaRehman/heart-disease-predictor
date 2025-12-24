@@ -104,8 +104,8 @@ def main() -> None:
     )
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    df["threshold"] = df["threshold"].round(3)
     df.to_csv(out_path, index=False)
-
     best_f1 = df.sort_values(["f1", "threshold"], ascending=[False, True]).iloc[0]
     best_recall = df.sort_values(["recall", "threshold"], ascending=[False, True]).iloc[0]
 

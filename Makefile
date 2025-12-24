@@ -1,9 +1,13 @@
-.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds
+.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline
 
 # Defaults for inference
 INPUT ?= data/processed/test.csv
 OUT ?= reports/predictions_baseline.csv
 THRESH ?= 0.5
+
+EVAL_INPUT ?= data/processed/test.csv
+EVAL_PREDS ?= reports/predictions_baseline.csv
+EVAL_OUT ?= reports/latest_eval.json
 
 setup:
 	uv sync --dev
@@ -59,3 +63,5 @@ $(OUT): $(INPUT) models/baseline_logreg.joblib
 
 clean-preds:
 	rm -f reports/predictions_*.csv
+
+eval-baseline: 

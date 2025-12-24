@@ -75,3 +75,14 @@ make ml
 
 ### Output
 - Metrics JSON (gitignored): `reports/*eval*.json`
+
+## Sweep thresholds (baseline)
+
+    # generate threshold_sweep.csv for baseline predictions
+    make sweep-thresholds
+
+    # customize input/preds + sweep range
+    make sweep-thresholds SWEEP_INPUT=data/processed/val.csv SWEEP_PREDS=reports/predictions_val.csv SWEEP_OUT=reports/val_threshold_sweep.csv TMIN=0.1 TMAX=0.9 TSTEP=0.05
+
+### Output
+- Threshold sweep CSV (gitignored):

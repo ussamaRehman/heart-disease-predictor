@@ -1,9 +1,13 @@
-.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds
+.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds predict-baseline-best eval-baseline-best
 
 # Defaults for inference
 INPUT ?= data/processed/test.csv
 OUT ?= reports/predictions_baseline.csv
 THRESH ?= 0.5
+
+BEST_THRESH ?= 0.70
+BEST_PREDS ?= reports/predictions_baseline_t0.70.csv
+BEST_EVAL_OUT ?= reports/eval_thresh_0.70.json
 
 EVAL_INPUT ?= data/processed/test.csv
 EVAL_PREDS ?= reports/predictions_baseline.csv
@@ -83,4 +87,16 @@ sweep-thresholds: $(SWEEP_OUT)
 $(SWEEP_OUT): $(SWEEP_INPUT) $(SWEEP_PREDS)
 	mkdir -p $(dir $@)
 	PYTHONPATH=src uv run python -m mlproj.evaluation.sweep_thresholds --input $(SWEEP_INPUT) --preds $(SWEEP_PREDS) --out $@ --t-min $(TMIN) --t-max $(TMAX) --t-step $(TSTEP)
+
+predict-baseline-best: $(BEST_PREDS)
+
+$(BEST_PREDS): data/processed/test.csv models/baseline_logreg.joblib
+	mkdir -p $(dir $@)
+	PYTHONPATH=src uv run python -m mlproj.inference.predict_baseline --input data/processed/test.csv --out $@ --threshold $(BEST_THRESH)
+
+eval-baseline-best: $(BEST_EVAL_OUT)
+
+$(BEST_EVAL_OUT): data/processed/test.csv $(BEST_PREDS)
+	mkdir -p $(dir $@)
+	PYTHONPATH=src uv run python -m mlproj.evaluation.eval_predictions --input data/processed/test.csv --preds $(BEST_PREDS) --out $@
 

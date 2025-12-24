@@ -1,80 +1,66 @@
-"""
-Baseline inference script.
-
-Loads the committed baseline model:
-- models/baseline_logreg.joblib
-
-Reads a CSV, drops target/num if present, predicts:
-- probability of disease (class=1)
-- predicted label with threshold (default 0.5)
-
-Writes outputs to:
-- reports/predictions_baseline.csv
-"""
-
 from __future__ import annotations
 
 import argparse
+from collections.abc import Sequence
 from pathlib import Path
+from typing import cast
 
 import joblib
 import pandas as pd
 
-FEATURES = [
-    "age",
-    "sex",
-    "cp",
-    "trestbps",
-    "chol",
-    "fbs",
-    "restecg",
-    "thalach",
-    "exang",
-    "oldpeak",
-    "slope",
-    "ca",
-    "thal",
-]
+
+def _expected_features(model: object) -> list[str] | None:
+    feats = getattr(model, "feature_names_in_", None)
+    if feats is None:
+        return None
+    return [str(x) for x in cast(Sequence[object], feats)]
 
 
-def load_input(path: Path) -> pd.DataFrame:
-    df = pd.read_csv(path)
+def prepare_features(model: object, df: pd.DataFrame) -> pd.DataFrame:
+    x = df.copy()
 
-    # Drop label-ish columns if present
-    for col in ["target", "num"]:
-        if col in df.columns:
-            df = df.drop(columns=[col])
+    # Real inference inputs usually won't have target, but allow it if present.
+    if "target" in x.columns:
+        x = x.drop(columns=["target"])
 
-    missing = [c for c in FEATURES if c not in df.columns]
+    feats = _expected_features(model)
+    if feats is None:
+        # Fallback: best effort. (Still OK for our project inputs.)
+        return x
+
+    missing = [c for c in feats if c not in x.columns]
     if missing:
         raise ValueError(f"Missing required feature columns: {missing}")
 
-    # Keep only expected order
-    return df[FEATURES]
+    # Reorder + ignore extras
+    return x[feats]
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--input", type=str, default="data/processed/test.csv")
-    parser.add_argument("--model", type=str, default="models/baseline_logreg.joblib")
-    parser.add_argument("--out", type=str, default="reports/predictions_baseline.csv")
-    parser.add_argument("--threshold", type=float, default=0.5)
-    args = parser.parse_args()
+    ap = argparse.ArgumentParser(description="Run baseline model inference on a CSV.")
+    ap.add_argument("--model", default="models/baseline_logreg.joblib")
+    ap.add_argument("--input", default="data/processed/test.csv")
+    ap.add_argument("--out", default="reports/predictions_baseline.csv")
+    ap.add_argument("--threshold", type=float, default=0.5)
+    args = ap.parse_args()
 
     model_path = Path(args.model)
-    if not model_path.exists():
-        raise FileNotFoundError(
-            f"Model not found at {model_path}. Run `make train-baseline` or `make ml` first."
-        )
-
-    x = load_input(Path(args.input))
-
     model = joblib.load(model_path)
+
+    df = pd.read_csv(args.input)
+    x = prepare_features(model, df)
 
     proba = model.predict_proba(x)[:, 1]
     pred = (proba >= args.threshold).astype(int)
 
-    out = pd.DataFrame({"proba_disease": proba, "pred": pred})
+    out = pd.DataFrame(
+        {
+            "row_id": x.index.astype(int),
+            "proba_disease": proba,
+            "pred": pred,
+        }
+    )
+
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out.to_csv(out_path, index=False)

@@ -60,3 +60,7 @@ make ml
 
 ### Output
 - Predictions CSV (gitignored): `reports/predictions_*.csv`
+
+### Notes
+- Inference is cached by Make via `OUT`. If it says "Nothing to be done", the output is already up-to-date.
+- To force regeneration: `make clean-preds` (or delete the OUT file).

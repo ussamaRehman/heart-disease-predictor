@@ -1,4 +1,4 @@
-.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline predict-baseline
+.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline
 
 # Defaults for inference
 INPUT ?= data/processed/test.csv
@@ -24,14 +24,10 @@ split: $(TRAIN) $(VAL) $(TEST)
 models/baseline_logreg.joblib: $(TRAIN) $(VAL) $(TEST)
 	PYTHONPATH=src uv run python -m mlproj.models.train_baseline
 
-predict-baseline: preprocess split models/baseline_logreg.joblib
-	PYTHONPATH=src uv run python -m mlproj.inference.predict_baseline --input $(INPUT) --out $(OUT) --threshold $(THRESH)
 
-data/raw/uci_heart_disease.csv:
-	uv run python scripts/download_uci_heart_disease.py
 
-data/processed/heart.csv: data/raw/uci_heart_disease.csv
-	PYTHONPATH=src uv run python -m mlproj.data.make_dataset
+predict-baseline: $(OUT)
 
-data/processed/train.csv data/processed/val.csv data/processed/test.csv: data/processed/heart.csv
-	PYTHONPATH=src uv run python -m mlproj.data.split
+$(OUT): $(INPUT) models/baseline_logreg.joblib
+	mkdir -p $(dir $@)
+	PYTHONPATH=src uv run python -m mlproj.inference.predict_baseline --input $(INPUT) --out $@ --threshold $(THRESH)

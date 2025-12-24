@@ -23,3 +23,6 @@ split: $(TRAIN) $(VAL) $(TEST)
 
 models/baseline_logreg.joblib: $(TRAIN) $(VAL) $(TEST)
 	PYTHONPATH=src uv run python -m mlproj.models.train_baseline
+
+predict-baseline: preprocess split models/baseline_logreg.joblib
+	PYTHONPATH=src uv run python -m mlproj.inference.predict_baseline --input $(INPUT) --out $(OUT) --threshold $(THRESH)

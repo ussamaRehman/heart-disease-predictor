@@ -31,3 +31,19 @@ predict-baseline: $(OUT)
 $(OUT): $(INPUT) models/baseline_logreg.joblib
 	mkdir -p $(dir $@)
 	PYTHONPATH=src uv run python -m mlproj.inference.predict_baseline --input $(INPUT) --out $@ --threshold $(THRESH)
+
+
+.PHONY: clean clean-preds clean-runs clean-data
+
+clean-preds:
+	rm -f reports/predictions_*.csv
+
+clean-runs:
+	rm -rf reports/runs models/runs
+	@rm -f reports/latest_baseline_metrics.* reports/latest_*.json reports/latest_*.md models/latest_baseline_logreg.joblib || true
+
+clean-data:
+	@rm -f data/raw/uci_heart_disease.csv || true
+	@rm -f data/processed/*.csv || true
+
+clean: clean-preds clean-runs clean-data

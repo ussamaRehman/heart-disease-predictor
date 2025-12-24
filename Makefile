@@ -26,3 +26,12 @@ models/baseline_logreg.joblib: $(TRAIN) $(VAL) $(TEST)
 
 predict-baseline: preprocess split models/baseline_logreg.joblib
 	PYTHONPATH=src uv run python -m mlproj.inference.predict_baseline --input $(INPUT) --out $(OUT) --threshold $(THRESH)
+
+data/raw/uci_heart_disease.csv:
+	uv run python scripts/download_uci_heart_disease.py
+
+data/processed/heart.csv: data/raw/uci_heart_disease.csv
+	PYTHONPATH=src uv run python -m mlproj.data.make_dataset
+
+data/processed/train.csv data/processed/val.csv data/processed/test.csv: data/processed/heart.csv
+	PYTHONPATH=src uv run python -m mlproj.data.split

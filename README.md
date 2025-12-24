@@ -64,3 +64,14 @@ make ml
 ### Notes
 - Inference is cached by Make via `OUT`. If it says "Nothing to be done", the output is already up-to-date.
 - To force regeneration: `make clean-preds` (or delete the OUT file).
+
+## Evaluate predictions (baseline)
+
+    # evaluate default baseline predictions vs labeled test split
+    make eval-baseline
+
+    # customize paths
+    make eval-baseline EVAL_INPUT=data/processed/val.csv EVAL_PREDS=reports/predictions_val.csv EVAL_OUT=reports/val_eval.json
+
+### Output
+- Metrics JSON (gitignored): `reports/*eval*.json`

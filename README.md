@@ -85,4 +85,29 @@ make ml
     make sweep-thresholds SWEEP_INPUT=data/processed/val.csv SWEEP_PREDS=reports/predictions_val.csv SWEEP_OUT=reports/val_threshold_sweep.csv TMIN=0.1 TMAX=0.9 TSTEP=0.05
 
 ### Output
-- Threshold sweep CSV (gitignored): `reports/threshold_sweep.csv`\n\n## Best threshold (baseline)\n\nAfter running `make sweep-thresholds`, the best F1 on the current test split was at threshold **0.70**.\n\n    # generate predictions using BEST_THRESH (default: 0.70)\n    make predict-baseline-best\n\n    # evaluate those predictions (writes JSON)\n    make eval-baseline-best\n\n    cat reports/eval_thresh_0.70.json\n\n### Notes\n- In a real project, you should tune the threshold on **val** and only report final numbers on **test**.\n\n
+- Threshold sweep CSV (gitignored): `reports/threshold_sweep.csv`\n\n## Best threshold (baseline)\n\nAfter running `make sweep-thresholds`, the best F1 on the current test split was at threshold **0.70**.\n\n    # generate predictions using BEST_THRESH (default: 0.70)\n    make predict-baseline-best\n\n    # evaluate those predictions (writes JSON)\n    make eval-baseline-best\n\n    cat reports/eval_thresh_0.70.json\n\n### Notes\n- In a real project, you should tune the threshold on **val** and only report final numbers on **test**.\n\n\n\n## Val-tuned threshold (baseline)
+
+Pick a decision threshold using the **val** split, then evaluate once on **test**.
+
+    # 1) create probabilities for val
+    PYTHONPATH=src uv run python -m mlproj.inference.predict_baseline \
+      --input data/processed/val.csv \
+      --out reports/predictions_val.csv \
+      --threshold 0.5
+
+    # 2) sweep thresholds on val (reads probabilities from preds file)
+    make sweep-thresholds \
+      SWEEP_INPUT=data/processed/val.csv \
+      SWEEP_PREDS=reports/predictions_val.csv \
+      SWEEP_OUT=reports/val_threshold_sweep.csv \
+      TMIN=0.05 TMAX=0.95 TSTEP=0.05
+
+    # 3) apply the chosen threshold (default VAL_TUNED_THRESH=0.35) on test
+    make predict-baseline-valtuned
+    make eval-baseline-valtuned
+
+    cat reports/eval_valtuned_t0.35.json
+
+### Notes
+- **Important:** `SWEEP_INPUT` and `SWEEP_PREDS` must match the same split (val with val).
+- This is the correct workflow: tune threshold on **val**, report final metrics on **test**.\n

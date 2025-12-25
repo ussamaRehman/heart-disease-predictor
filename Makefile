@@ -1,4 +1,4 @@
-.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds predict-baseline-best eval-baseline-best
+.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds predict-baseline-best eval-baseline-best predict-baseline-valtuned eval-baseline-valtuned
 
 # Defaults for inference
 INPUT ?= data/processed/test.csv
@@ -17,10 +17,16 @@ TMIN ?= 0.05
 TMAX ?= 0.95
 TSTEP ?= 0.05
 
+
 BEST_INPUT ?= data/processed/test.csv
 BEST_THRESH ?= 0.70
 BEST_PREDS ?= reports/predictions_baseline_t$(BEST_THRESH).csv
 BEST_EVAL_OUT ?= reports/eval_thresh_$(BEST_THRESH).json
+
+VAL_TUNED_THRESH ?= 0.35
+VAL_TUNED_INPUT ?= data/processed/test.csv
+VAL_TUNED_PREDS ?= reports/predictions_baseline_valtuned_t$(VAL_TUNED_THRESH).csv
+VAL_TUNED_EVAL_OUT ?= reports/eval_valtuned_t$(VAL_TUNED_THRESH).json
 
 
 setup:
@@ -101,4 +107,16 @@ eval-baseline-best: $(BEST_EVAL_OUT)
 $(BEST_EVAL_OUT): $(BEST_INPUT) $(BEST_PREDS)
 	mkdir -p $(dir $@)
 	PYTHONPATH=src uv run python -m mlproj.evaluation.eval_predictions --input $(BEST_INPUT) --preds $(BEST_PREDS) --out $@
+
+predict-baseline-valtuned: $(VAL_TUNED_PREDS)
+
+$(VAL_TUNED_PREDS): $(VAL_TUNED_INPUT) models/baseline_logreg.joblib
+	mkdir -p $(dir $@)
+	PYTHONPATH=src uv run python -m mlproj.inference.predict_baseline --input $(VAL_TUNED_INPUT) --out $@ --threshold $(VAL_TUNED_THRESH)
+
+eval-baseline-valtuned: $(VAL_TUNED_EVAL_OUT)
+
+$(VAL_TUNED_EVAL_OUT): $(VAL_TUNED_INPUT) $(VAL_TUNED_PREDS)
+	mkdir -p $(dir $@)
+	PYTHONPATH=src uv run python -m mlproj.evaluation.eval_predictions --input $(VAL_TUNED_INPUT) --preds $(VAL_TUNED_PREDS) --out $@
 

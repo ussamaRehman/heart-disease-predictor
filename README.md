@@ -111,3 +111,16 @@ Pick a decision threshold using the **val** split, then evaluate once on **test*
 ### Notes
 - **Important:** `SWEEP_INPUT` and `SWEEP_PREDS` must match the same split (val with val).
 - This is the correct workflow: tune threshold on **val**, report final metrics on **test**.\n
+
+## Val-tuned threshold (baseline)
+
+End-to-end (recommended): tune the decision threshold on **val**, then apply it on **test**.
+
+    # runs: predict-val -> val-sweep -> val-best-threshold -> predict-baseline-valtuned-auto -> eval-baseline-valtuned-auto
+    make val-tune-baseline
+
+    cat reports/val_best_threshold.txt
+    cat reports/eval_valtuned_auto.json
+
+### Notes
+- This keeps the workflow correct: tune on **val**, report final metrics on **test**.

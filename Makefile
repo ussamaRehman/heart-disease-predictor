@@ -5,9 +5,6 @@ INPUT ?= data/processed/test.csv
 OUT ?= reports/predictions_baseline.csv
 THRESH ?= 0.5
 
-BEST_THRESH ?= 0.70
-BEST_PREDS ?= reports/predictions_baseline_t0.70.csv
-BEST_EVAL_OUT ?= reports/eval_thresh_0.70.json
 
 EVAL_INPUT ?= data/processed/test.csv
 EVAL_PREDS ?= reports/predictions_baseline.csv
@@ -19,6 +16,11 @@ SWEEP_OUT ?= reports/threshold_sweep.csv
 TMIN ?= 0.05
 TMAX ?= 0.95
 TSTEP ?= 0.05
+
+BEST_INPUT ?= data/processed/test.csv
+BEST_THRESH ?= 0.70
+BEST_PREDS ?= reports/predictions_baseline_t$(BEST_THRESH).csv
+BEST_EVAL_OUT ?= reports/eval_thresh_$(BEST_THRESH).json
 
 
 setup:
@@ -90,13 +92,13 @@ $(SWEEP_OUT): $(SWEEP_INPUT) $(SWEEP_PREDS)
 
 predict-baseline-best: $(BEST_PREDS)
 
-$(BEST_PREDS): data/processed/test.csv models/baseline_logreg.joblib
+$(BEST_PREDS): $(BEST_INPUT) models/baseline_logreg.joblib
 	mkdir -p $(dir $@)
-	PYTHONPATH=src uv run python -m mlproj.inference.predict_baseline --input data/processed/test.csv --out $@ --threshold $(BEST_THRESH)
+	PYTHONPATH=src uv run python -m mlproj.inference.predict_baseline --input $(BEST_INPUT) --out $@ --threshold $(BEST_THRESH)
 
 eval-baseline-best: $(BEST_EVAL_OUT)
 
-$(BEST_EVAL_OUT): data/processed/test.csv $(BEST_PREDS)
+$(BEST_EVAL_OUT): $(BEST_INPUT) $(BEST_PREDS)
 	mkdir -p $(dir $@)
-	PYTHONPATH=src uv run python -m mlproj.evaluation.eval_predictions --input data/processed/test.csv --preds $(BEST_PREDS) --out $@
+	PYTHONPATH=src uv run python -m mlproj.evaluation.eval_predictions --input $(BEST_INPUT) --preds $(BEST_PREDS) --out $@
 

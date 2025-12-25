@@ -1,4 +1,4 @@
-.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds predict-baseline-best eval-baseline-best predict-baseline-valtuned eval-baseline-valtuned predict-val val-sweep val-best-threshold predict-baseline-valtuned-auto eval-baseline-valtuned-auto
+.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds predict-baseline-best eval-baseline-best predict-baseline-valtuned eval-baseline-valtuned predict-val val-sweep val-best-threshold predict-baseline-valtuned-auto eval-baseline-valtuned-auto val-tune-baseline
 
 # Defaults for inference
 INPUT ?= data/processed/test.csv
@@ -160,4 +160,6 @@ $(VALTUNED_AUTO_EVAL): $(VALTUNED_AUTO_INPUT) $(VALTUNED_AUTO_PREDS)
 	mkdir -p $(dir $@)
 	PYTHONPATH=src uv run python -m mlproj.evaluation.eval_predictions --input $(VALTUNED_AUTO_INPUT) --preds $(VALTUNED_AUTO_PREDS) --out $@
 # --- end val-tuned auto ---
+
+val-tune-baseline: predict-val val-sweep val-best-threshold predict-baseline-valtuned-auto eval-baseline-valtuned-auto
 

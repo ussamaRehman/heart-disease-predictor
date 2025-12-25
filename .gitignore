@@ -36,7 +36,9 @@ reports/latest_*.json
 reports/predictions_*.csv
 models/runs/
 reports/threshold_sweep.csv
-\nreports/predictions_baseline_t*.csv\nreports/eval_thresh_*.json\n
+
 reports/val_threshold_sweep.csv
 reports/predictions_baseline_valtuned_t*.csv
 reports/eval_valtuned_t*.json
+reports/eval_thresh_*.json
+reports/predictions_baseline_t*.csv

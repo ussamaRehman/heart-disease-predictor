@@ -85,7 +85,26 @@ make ml
     make sweep-thresholds SWEEP_INPUT=data/processed/val.csv SWEEP_PREDS=reports/predictions_val.csv SWEEP_OUT=reports/val_threshold_sweep.csv TMIN=0.1 TMAX=0.9 TSTEP=0.05
 
 ### Output
-- Threshold sweep CSV (gitignored): `reports/threshold_sweep.csv`\n\n## Best threshold (baseline)\n\nAfter running `make sweep-thresholds`, the best F1 on the current test split was at threshold **0.70**.\n\n    # generate predictions using BEST_THRESH (default: 0.70)\n    make predict-baseline-best\n\n    # evaluate those predictions (writes JSON)\n    make eval-baseline-best\n\n    cat reports/eval_thresh_0.70.json\n\n### Notes\n- In a real project, you should tune the threshold on **val** and only report final numbers on **test**.\n\n\n\n## Val-tuned threshold (baseline)
+- Threshold sweep CSV (gitignored): `reports/threshold_sweep.csv`
+
+## Best threshold (baseline)
+
+After running `make sweep-thresholds`, the best F1 on the current test split was at threshold **0.70**.
+
+    # generate predictions using BEST_THRESH (default: 0.70)
+    make predict-baseline-best
+
+    # evaluate those predictions (writes JSON)
+    make eval-baseline-best
+
+    cat reports/eval_thresh_0.70.json
+
+### Notes
+- In a real project, you should tune the threshold on **val** and only report final numbers on **test**.
+
+
+
+## Val-tuned threshold (baseline)
 
 Pick a decision threshold using the **val** split, then evaluate once on **test**.
 
@@ -110,7 +129,8 @@ Pick a decision threshold using the **val** split, then evaluate once on **test*
 
 ### Notes
 - **Important:** `SWEEP_INPUT` and `SWEEP_PREDS` must match the same split (val with val).
-- This is the correct workflow: tune threshold on **val**, report final metrics on **test**.\n
+- This is the correct workflow: tune threshold on **val**, report final metrics on **test**.
+
 
 ## Val-tuned threshold (baseline)
 

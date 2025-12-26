@@ -42,10 +42,10 @@ reports/predictions_baseline_valtuned_t*.csv
 reports/eval_valtuned_t*.json
 reports/eval_thresh_*.json
 reports/predictions_baseline_t*.csv
-\nreports/predictions_val.csv
-\nreports/val_best_threshold.txt
-\nreports/predictions_baseline_valtuned_auto.csv
-\nreports/eval_valtuned_auto.json
+reports/predictions_val.csv
+reports/val_best_threshold.txt
+reports/predictions_baseline_valtuned_auto.csv
+reports/eval_valtuned_auto.json
 reports/val_tuning_report.md
 reports/predictions_rf.csv
 reports/eval_rf.json
@@ -57,7 +57,8 @@ reports/predictions_rf_valtuned_auto.csv
 reports/eval_rf_valtuned_auto.json
 reports/rf_val_tuning_report.md
 reports/model_comparison.md
-\nreports/final_report.md\n
+reports/final_report.md
+
 reports/pr_curve_baseline.csv
 reports/pr_curve_baseline.md
 reports/pr_curve_rf.csv

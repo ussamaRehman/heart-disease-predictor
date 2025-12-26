@@ -46,3 +46,4 @@ reports/predictions_baseline_t*.csv
 \nreports/val_best_threshold.txt
 \nreports/predictions_baseline_valtuned_auto.csv
 \nreports/eval_valtuned_auto.json
+reports/val_tuning_report.md

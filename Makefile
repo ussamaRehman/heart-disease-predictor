@@ -1,4 +1,4 @@
-.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds predict-baseline-best eval-baseline-best predict-baseline-valtuned eval-baseline-valtuned predict-val val-sweep val-best-threshold predict-baseline-valtuned-auto eval-baseline-valtuned-auto val-tune-baseline clean-val-tune val-tune-baseline-clean
+.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds predict-baseline-best eval-baseline-best predict-baseline-valtuned eval-baseline-valtuned predict-val val-sweep val-best-threshold predict-baseline-valtuned-auto eval-baseline-valtuned-auto val-tune-baseline clean-val-tune val-tune-baseline-clean val-tune-report
 
 # Defaults for inference
 INPUT ?= data/processed/test.csv
@@ -31,6 +31,7 @@ VAL_SWEEP_INPUT ?= data/processed/val.csv
 VAL_SWEEP_PREDS ?= reports/predictions_val.csv
 VAL_SWEEP_OUT ?= reports/val_threshold_sweep.csv
 VAL_BEST_METRIC ?= f1
+VAL_TUNE_REPORT ?= reports/val_tuning_report.md
 VAL_BEST_THRESH_FILE ?= reports/val_best_threshold.txt
 VALTUNED_AUTO_INPUT ?= data/processed/test.csv
 VALTUNED_AUTO_PREDS ?= reports/predictions_baseline_valtuned_auto.csv
@@ -167,4 +168,10 @@ clean-val-tune:
 	rm -f reports/predictions_val.csv reports/val_threshold_sweep.csv reports/val_best_threshold.txt reports/predictions_baseline_valtuned_auto.csv reports/eval_valtuned_auto.json
 
 val-tune-baseline-clean: clean-val-tune val-tune-baseline
+
+val-tune-report: $(VAL_TUNE_REPORT)
+
+$(VAL_TUNE_REPORT): $(VAL_SWEEP_OUT) $(VAL_BEST_THRESH_FILE) $(VALTUNED_AUTO_EVAL)
+	mkdir -p $(dir $@)
+	PYTHONPATH=src uv run python -m mlproj.evaluation.write_val_tuning_report --sweep-csv $(VAL_SWEEP_OUT) --metric $(VAL_BEST_METRIC) --threshold-file $(VAL_BEST_THRESH_FILE) --eval-json $(VALTUNED_AUTO_EVAL) --out $@
 

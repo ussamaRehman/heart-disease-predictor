@@ -108,14 +108,10 @@ After running `make sweep-thresholds`, the best F1 on the current test split was
 
 End-to-end (recommended): tune the decision threshold on **val**, then apply it on **test**.
 
-    # uses caching (great for fresh clone or repeat runs)
-    make val-tune-baseline
+    # full rerun + write a markdown report (recommended)
+    make val-tune-baseline-report
 
-    # force a full rerun (cleans generated files first)
-    make val-tune-baseline-clean
-
-    cat reports/val_best_threshold.txt
-    cat reports/eval_valtuned_auto.json
+    sed -n "1,160p" reports/val_tuning_report.md
 
 ### Notes
 - This keeps the workflow correct: tune on **val**, report final metrics on **test**.
@@ -123,14 +119,10 @@ End-to-end (recommended): tune the decision threshold on **val**, then apply it 
 
 End-to-end (recommended): tune the decision threshold on **val**, then apply it on **test**.
 
-    # uses caching (great for fresh clone or repeat runs)
-    make val-tune-baseline
+    # full rerun + write a markdown report (recommended)
+    make val-tune-baseline-report
 
-    # force a full rerun (cleans generated files first)
-    make val-tune-baseline-clean
-
-    cat reports/val_best_threshold.txt
-    cat reports/eval_valtuned_auto.json
+    sed -n "1,160p" reports/val_tuning_report.md
 
 ### Notes
 - This keeps the workflow correct: tune on **val**, report final metrics on **test**.

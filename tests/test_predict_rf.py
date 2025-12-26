@@ -39,5 +39,5 @@ def test_predict_rf_writes_prob_and_pred(tmp_path, monkeypatch) -> None:
     main()
 
     df = pd.read_csv(out)
-    assert list(df.columns) == ["prob", "pred"]
+    assert list(df.columns) == ["proba_disease", "pred"]
     assert len(df) == len(x)

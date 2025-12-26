@@ -24,7 +24,7 @@ def main() -> None:
     prob = [float(p[1]) for p in clf.predict_proba(x)]
     pred = [1 if p >= args.threshold else 0 for p in prob]
 
-    out_df = pd.DataFrame({"prob": prob, "pred": pred})
+    out_df = pd.DataFrame({"proba_disease": prob, "pred": pred})
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     out_df.to_csv(Path(args.out), index=False)
 

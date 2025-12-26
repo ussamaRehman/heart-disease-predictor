@@ -126,3 +126,24 @@ End-to-end (recommended): tune the decision threshold on **val**, then apply it 
 
 ### Notes
 - This keeps the workflow correct: tune on **val**, report final metrics on **test**.
+
+## Random Forest (RF)
+
+Train + evaluate RF on the current splits.
+
+    make train-rf
+    make predict-rf RF_INPUT=data/processed/test.csv
+    make eval-rf RF_INPUT=data/processed/test.csv
+    cat reports/eval_rf.json
+
+### Val-tuned threshold (RF)
+
+End-to-end (recommended): sweep thresholds on **val**, pick the best metric, apply once on **test**, and write a report.
+
+    # full rerun + markdown report (recommended)
+    make val-tune-rf-report VAL_BEST_METRIC=f1
+
+    sed -n "1,200p" reports/rf_val_tuning_report.md
+
+### Notes
+- Threshold tuning can change the precision/recall tradeoff a lot (e.g., optimizing recall usually lowers precision).

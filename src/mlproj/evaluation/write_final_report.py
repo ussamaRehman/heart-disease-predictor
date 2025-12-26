@@ -1,23 +1,25 @@
 from __future__ import annotations
 
 import argparse
+import re
 from pathlib import Path
 
 
-def _extract_backticked_value(text: str, label: str) -> str | None:
-    # Example line:
-    # **Winner (by `f1` on test):** `baseline_logreg`
-    for line in text.splitlines():
-        if label in line and "`" in line:
-            parts = line.split("`")
-            if len(parts) >= 2:
-                return parts[1]
-    return None
-
-
 def _parse_metric_and_winner(compare_md: str) -> tuple[str, str]:
-    metric = _extract_backticked_value(compare_md, "Optimized metric") or "f1"
-    winner = _extract_backticked_value(compare_md, "Winner") or "baseline_logreg"
+    metric = "f1"
+    winner = "baseline_logreg"
+
+    for line in compare_md.splitlines():
+        if "Optimized metric" in line:
+            m = re.findall(r"`([^`]+)`", line)
+            if m:
+                metric = m[0]
+        if line.strip().startswith("**Winner"):
+            m = re.findall(r"`([^`]+)`", line)
+            # Winner line has two backticked values: metric + winner; we want the last one.
+            if m:
+                winner = m[-1]
+
     return metric, winner
 
 

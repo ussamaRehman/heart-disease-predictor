@@ -47,3 +47,6 @@ reports/predictions_baseline_t*.csv
 \nreports/predictions_baseline_valtuned_auto.csv
 \nreports/eval_valtuned_auto.json
 reports/val_tuning_report.md
+reports/predictions_rf.csv
+reports/eval_rf.json
+reports/rf_threshold_sweep.csv

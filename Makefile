@@ -1,4 +1,4 @@
-.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds predict-baseline-best eval-baseline-best predict-baseline-valtuned eval-baseline-valtuned predict-val val-sweep val-best-threshold predict-baseline-valtuned-auto eval-baseline-valtuned-auto val-tune-baseline clean-val-tune val-tune-baseline-clean val-tune-report val-tune-baseline-report
+.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds predict-baseline-best eval-baseline-best predict-baseline-valtuned eval-baseline-valtuned predict-val val-sweep val-best-threshold predict-baseline-valtuned-auto eval-baseline-valtuned-auto val-tune-baseline clean-val-tune val-tune-baseline-clean val-tune-report val-tune-baseline-report train-rf predict-rf eval-rf sweep-thresholds-rf
 
 # Defaults for inference
 INPUT ?= data/processed/test.csv
@@ -32,6 +32,13 @@ VAL_SWEEP_PREDS ?= reports/predictions_val.csv
 VAL_SWEEP_OUT ?= reports/val_threshold_sweep.csv
 VAL_BEST_METRIC ?= f1
 VAL_TUNE_REPORT ?= reports/val_tuning_report.md
+RF_MODEL_OUT ?= models/rf.joblib
+RF_REPORT_OUT ?= reports/rf_metrics.md
+RF_INPUT ?= data/processed/test.csv
+RF_PREDS ?= reports/predictions_rf.csv
+RF_THRESH ?= 0.5
+RF_EVAL_OUT ?= reports/eval_rf.json
+RF_SWEEP_OUT ?= reports/rf_threshold_sweep.csv
 VAL_BEST_THRESH_FILE ?= reports/val_best_threshold.txt
 VALTUNED_AUTO_INPUT ?= data/processed/test.csv
 VALTUNED_AUTO_PREDS ?= reports/predictions_baseline_valtuned_auto.csv
@@ -177,3 +184,30 @@ $(VAL_TUNE_REPORT): $(VAL_SWEEP_OUT) $(VAL_BEST_THRESH_FILE) $(VALTUNED_AUTO_EVA
 
 val-tune-baseline-report: val-tune-baseline-clean val-tune-report
 
+
+# --- RF TARGETS START ---
+train-rf: $(RF_MODEL_OUT)
+
+$(RF_MODEL_OUT): data/processed/train.csv data/processed/val.csv data/processed/test.csv
+	mkdir -p $(dir $@)
+	mkdir -p reports/
+	PYTHONPATH=src uv run python -m mlproj.models.train_rf --model-out $@ --report-out $(RF_REPORT_OUT)
+
+predict-rf: $(RF_PREDS)
+
+$(RF_PREDS): $(RF_INPUT) $(RF_MODEL_OUT)
+	mkdir -p $(dir $@)
+	PYTHONPATH=src uv run python -m mlproj.inference.predict_rf --input $(RF_INPUT) --out $@ --model $(RF_MODEL_OUT) --threshold $(RF_THRESH)
+
+eval-rf: $(RF_EVAL_OUT)
+
+$(RF_EVAL_OUT): $(RF_INPUT) $(RF_PREDS)
+	mkdir -p $(dir $@)
+	PYTHONPATH=src uv run python -m mlproj.evaluation.eval_predictions --input $(RF_INPUT) --preds $(RF_PREDS) --out $@
+
+sweep-thresholds-rf: $(RF_SWEEP_OUT)
+
+$(RF_SWEEP_OUT): $(RF_INPUT) $(RF_PREDS)
+	mkdir -p $(dir $@)
+	PYTHONPATH=src uv run python -m mlproj.evaluation.sweep_thresholds --input $(RF_INPUT) --preds $(RF_PREDS) --out $@ --t-min $(TMIN) --t-max $(TMAX) --t-step $(TSTEP)
+# --- RF TARGETS END ---

@@ -265,12 +265,6 @@ clean-rf-val-tune:
 val-tune-rf-report: clean-rf-val-tune rf-predict-val rf-val-sweep rf-val-best-threshold predict-rf-valtuned-auto eval-rf-valtuned-auto rf-val-tune-report
 
 
-compare-models-report: compare-models
-	@echo
-	@echo '---- $(COMPARE_REPORT) ----'
-	@sed -n '1,200p' $(COMPARE_REPORT)
-
-# --- model-compare targets ---
 model-compare-report: $(COMPARE_REPORT)
 
 $(COMPARE_REPORT): reports/eval_valtuned_auto.json reports/val_best_threshold.txt reports/eval_rf_valtuned_auto.json reports/rf_val_best_threshold.txt
@@ -279,14 +273,6 @@ $(COMPARE_REPORT): reports/eval_valtuned_auto.json reports/val_best_threshold.tx
 
 compare-models: val-tune-baseline-report val-tune-rf-report model-compare-report
 
-compare-models-report: compare-models
-	@echo
-	@echo "---- $(COMPARE_REPORT) ----"
-	@sed -n "1,200p" $(COMPARE_REPORT)
-# --- end model-compare targets ---
-
-
-# --- final-report targets ---
 final-report: $(FINAL_REPORT)
 
 $(FINAL_REPORT): reports/val_tuning_report.md reports/rf_val_tuning_report.md $(COMPARE_REPORT)
@@ -298,4 +284,9 @@ final-report-print: compare-models-report final-report
 	@echo "---- $(FINAL_REPORT) ----"
 	@sed -n "1,220p" $(FINAL_REPORT)
 # --- end final-report targets ---
+
+compare-models-report: compare-models
+	@echo
+	@echo "---- $(COMPARE_REPORT) ----"
+	@sed -n "1,200p" $(COMPARE_REPORT)
 

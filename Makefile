@@ -1,4 +1,5 @@
-.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds predict-baseline-best eval-baseline-best predict-baseline-valtuned eval-baseline-valtuned predict-val val-sweep val-best-threshold predict-baseline-valtuned-auto eval-baseline-valtuned-auto val-tune-baseline clean-val-tune val-tune-baseline-clean val-tune-report val-tune-baseline-report train-rf predict-rf eval-rf sweep-thresholds-rf rf-predict-val rf-val-sweep rf-val-best-threshold predict-rf-valtuned-auto eval-rf-valtuned-auto rf-val-tune-report clean-rf-val-tune val-tune-rf-report compare-models model-compare-report compare-models-report
+FINAL_REPORT ?= reports/final_report.md
+.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds predict-baseline-best eval-baseline-best predict-baseline-valtuned eval-baseline-valtuned predict-val val-sweep val-best-threshold predict-baseline-valtuned-auto eval-baseline-valtuned-auto val-tune-baseline clean-val-tune val-tune-baseline-clean val-tune-report val-tune-baseline-report train-rf predict-rf eval-rf sweep-thresholds-rf rf-predict-val rf-val-sweep rf-val-best-threshold predict-rf-valtuned-auto eval-rf-valtuned-auto rf-val-tune-report clean-rf-val-tune val-tune-rf-report compare-models model-compare-report compare-models-report final-report final-report-print
 
 # Defaults for inference
 INPUT ?= data/processed/test.csv
@@ -263,6 +264,12 @@ clean-rf-val-tune:
 
 val-tune-rf-report: clean-rf-val-tune rf-predict-val rf-val-sweep rf-val-best-threshold predict-rf-valtuned-auto eval-rf-valtuned-auto rf-val-tune-report
 
+
+compare-models-report: compare-models
+	@echo
+	@echo '---- $(COMPARE_REPORT) ----'
+	@sed -n '1,200p' $(COMPARE_REPORT)
+
 # --- model-compare targets ---
 model-compare-report: $(COMPARE_REPORT)
 
@@ -271,10 +278,24 @@ $(COMPARE_REPORT): reports/eval_valtuned_auto.json reports/val_best_threshold.tx
 	PYTHONPATH=src uv run python -m mlproj.evaluation.compare_models --metric $(VAL_BEST_METRIC) --baseline-eval reports/eval_valtuned_auto.json --baseline-threshold-file reports/val_best_threshold.txt --rf-eval reports/eval_rf_valtuned_auto.json --rf-threshold-file reports/rf_val_best_threshold.txt --out $@
 
 compare-models: val-tune-baseline-report val-tune-rf-report model-compare-report
-# --- end model-compare targets ---
 
 compare-models-report: compare-models
 	@echo
-	@echo '---- $(COMPARE_REPORT) ----'
-	@sed -n '1,200p' $(COMPARE_REPORT)
+	@echo "---- $(COMPARE_REPORT) ----"
+	@sed -n "1,200p" $(COMPARE_REPORT)
+# --- end model-compare targets ---
+
+
+# --- final-report targets ---
+final-report: $(FINAL_REPORT)
+
+$(FINAL_REPORT): reports/val_tuning_report.md reports/rf_val_tuning_report.md $(COMPARE_REPORT)
+	mkdir -p $(dir $@)
+	PYTHONPATH=src uv run python -m mlproj.evaluation.write_final_report --baseline-report reports/val_tuning_report.md --rf-report reports/rf_val_tuning_report.md --compare-report $(COMPARE_REPORT) --out $@
+
+final-report-print: compare-models-report final-report
+	@echo
+	@echo "---- $(FINAL_REPORT) ----"
+	@sed -n "1,220p" $(FINAL_REPORT)
+# --- end final-report targets ---
 

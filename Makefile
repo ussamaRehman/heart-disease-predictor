@@ -1,4 +1,4 @@
-.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds predict-baseline-best eval-baseline-best predict-baseline-valtuned eval-baseline-valtuned predict-val val-sweep val-best-threshold predict-baseline-valtuned-auto eval-baseline-valtuned-auto val-tune-baseline clean-val-tune val-tune-baseline-clean val-tune-report
+.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds predict-baseline-best eval-baseline-best predict-baseline-valtuned eval-baseline-valtuned predict-val val-sweep val-best-threshold predict-baseline-valtuned-auto eval-baseline-valtuned-auto val-tune-baseline clean-val-tune val-tune-baseline-clean val-tune-report val-tune-baseline-report
 
 # Defaults for inference
 INPUT ?= data/processed/test.csv
@@ -174,4 +174,6 @@ val-tune-report: $(VAL_TUNE_REPORT)
 $(VAL_TUNE_REPORT): $(VAL_SWEEP_OUT) $(VAL_BEST_THRESH_FILE) $(VALTUNED_AUTO_EVAL)
 	mkdir -p $(dir $@)
 	PYTHONPATH=src uv run python -m mlproj.evaluation.write_val_tuning_report --sweep-csv $(VAL_SWEEP_OUT) --metric $(VAL_BEST_METRIC) --threshold-file $(VAL_BEST_THRESH_FILE) --eval-json $(VALTUNED_AUTO_EVAL) --out $@
+
+val-tune-baseline-report: val-tune-baseline-clean val-tune-report
 

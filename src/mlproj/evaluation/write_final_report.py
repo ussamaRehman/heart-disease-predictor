@@ -15,6 +15,12 @@ def _parse_metric_and_winner(compare_md: str) -> tuple[str, str]:
     return metric_m.group(1), winner_m.group(1)
 
 
+def _strip_pr_heading(md: str) -> str:
+    """Remove the top-level PR title so it nests nicely in the final report."""
+    md = re.sub(r"(?s)\A# Precision–Recall \(PR\) summary\s*\n+", "", md)
+    return md.lstrip("\n")
+
+
 def render_final_report(
     *,
     metric: str,
@@ -45,10 +51,10 @@ def render_final_report(
         parts.append("## Precision–Recall (PR) summaries\n\n")
         if pr_baseline_md:
             parts.append("### Baseline PR summary\n\n")
-            parts.append(pr_baseline_md.strip() + "\n\n")
+            parts.append(_strip_pr_heading(pr_baseline_md).strip() + "\n\n")
         if pr_rf_md:
             parts.append("### Random Forest PR summary\n\n")
-            parts.append(pr_rf_md.strip() + "\n\n")
+            parts.append(_strip_pr_heading(pr_rf_md).strip() + "\n\n")
 
     return "".join(parts).rstrip() + "\n"
 

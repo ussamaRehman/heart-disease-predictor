@@ -14,6 +14,7 @@ def test_parse_metric_and_winner_robust() -> None:
 | baseline_logreg | `0.350` | 0.804 |
 | random_forest | `0.200` | 0.696 |
 """
+
     metric, winner = _parse_metric_and_winner(compare_md)
     assert metric == "f1"
     assert winner == "baseline_logreg"
@@ -28,8 +29,10 @@ def test_render_final_report_includes_pr_summaries_when_given() -> None:
 
     baseline_md = "# Baseline report\n- ok\n"
     rf_md = "# RF report\n- ok\n"
-    pr_baseline_md = "# PR baseline\n- AP: 0.91\n"
-    pr_rf_md = "# PR rf\n- AP: 0.89\n"
+
+    # These mimic the real pr_curve outputs (with an H1) — final report should strip the H1 when embedding.
+    pr_baseline_md = "# Precision–Recall (PR) summary\n\n- **Average Precision (AP):** `0.91`\n"
+    pr_rf_md = "# Precision–Recall (PR) summary\n\n- **Average Precision (AP):** `0.89`\n"
 
     md = render_final_report(
         metric="f1",
@@ -45,3 +48,6 @@ def test_render_final_report_includes_pr_summaries_when_given() -> None:
     assert "## Precision–Recall (PR) summaries" in md
     assert "### Baseline PR summary" in md
     assert "### Random Forest PR summary" in md
+
+    # We should NOT embed the PR H1 headings directly.
+    assert "# Precision–Recall (PR) summary" not in md

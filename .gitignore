@@ -58,3 +58,7 @@ reports/eval_rf_valtuned_auto.json
 reports/rf_val_tuning_report.md
 reports/model_comparison.md
 \nreports/final_report.md\n
+reports/pr_curve_baseline.csv
+reports/pr_curve_baseline.md
+reports/pr_curve_rf.csv
+reports/pr_curve_rf.md

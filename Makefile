@@ -1,5 +1,9 @@
 FINAL_REPORT ?= reports/final_report.md
-.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds predict-baseline-best eval-baseline-best predict-baseline-valtuned eval-baseline-valtuned predict-val val-sweep val-best-threshold predict-baseline-valtuned-auto eval-baseline-valtuned-auto val-tune-baseline clean-val-tune val-tune-baseline-clean val-tune-report val-tune-baseline-report train-rf predict-rf eval-rf sweep-thresholds-rf rf-predict-val rf-val-sweep rf-val-best-threshold predict-rf-valtuned-auto eval-rf-valtuned-auto rf-val-tune-report clean-rf-val-tune val-tune-rf-report compare-models model-compare-report compare-models-report final-report final-report-print
+PR_CURVE_BASELINE_CSV ?= reports/pr_curve_baseline.csv
+PR_CURVE_BASELINE_MD  ?= reports/pr_curve_baseline.md
+PR_CURVE_RF_CSV       ?= reports/pr_curve_rf.csv
+PR_CURVE_RF_MD        ?= reports/pr_curve_rf.md
+.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds predict-baseline-best eval-baseline-best predict-baseline-valtuned eval-baseline-valtuned predict-val val-sweep val-best-threshold predict-baseline-valtuned-auto eval-baseline-valtuned-auto val-tune-baseline clean-val-tune val-tune-baseline-clean val-tune-report val-tune-baseline-report train-rf predict-rf eval-rf sweep-thresholds-rf rf-predict-val rf-val-sweep rf-val-best-threshold predict-rf-valtuned-auto eval-rf-valtuned-auto rf-val-tune-report clean-rf-val-tune val-tune-rf-report compare-models model-compare-report compare-models-report final-report final-report-print pr-curve-baseline pr-curve-rf pr-curves pr-curves-print
 
 # Defaults for inference
 INPUT ?= data/processed/test.csv
@@ -289,4 +293,28 @@ compare-models-report: compare-models
 	@echo
 	@echo "---- $(COMPARE_REPORT) ----"
 	@sed -n "1,200p" $(COMPARE_REPORT)
+
+# --- pr-curve targets ---
+pr-curve-baseline: $(PR_CURVE_BASELINE_MD)
+
+$(PR_CURVE_BASELINE_MD): predict-baseline-valtuned-auto
+	mkdir -p reports/
+	PYTHONPATH=src uv run python -m mlproj.evaluation.pr_curve --input data/processed/test.csv --preds reports/predictions_baseline_valtuned_auto.csv --out-csv $(PR_CURVE_BASELINE_CSV) --out-md $@
+
+pr-curve-rf: $(PR_CURVE_RF_MD)
+
+$(PR_CURVE_RF_MD): predict-rf-valtuned-auto
+	mkdir -p reports/
+	PYTHONPATH=src uv run python -m mlproj.evaluation.pr_curve --input data/processed/test.csv --preds reports/predictions_rf_valtuned_auto.csv --out-csv $(PR_CURVE_RF_CSV) --out-md $@
+
+pr-curves: pr-curve-baseline pr-curve-rf
+
+pr-curves-print: pr-curves
+	@echo
+	@echo "---- $(PR_CURVE_BASELINE_MD) ----"
+	@sed -n "1,80p" $(PR_CURVE_BASELINE_MD)
+	@echo
+	@echo "---- $(PR_CURVE_RF_MD) ----"
+	@sed -n "1,80p" $(PR_CURVE_RF_MD)
+# --- end pr-curve targets ---
 

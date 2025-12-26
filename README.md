@@ -157,4 +157,26 @@ Compare **val-tuned** baseline logistic regression vs Random Forest, using the s
 
 ### Notes
 - The winner depends on the metric you optimize (e.g., optimizing recall usually lowers precision).
-- Thresholds are tuned on **val**; the comparison table reports metrics on **test**.
+- Thresholds are tuned on **val**; the comparison table reports metrics on **test**.\n\n## Final report\n\nGenerate a single markdown file that aggregates:\n- baseline val-tuning report\n- RF val-tuning report\n- model comparison report\n\    make final-report-print VAL_BEST_METRIC=f1\n\n    # or just write the file (no printing)\n    make final-report VAL_BEST_METRIC=f1\n\n
+
+## Final report
+
+Generate a single markdown file that aggregates:
+- baseline val-tuning report
+- RF val-tuning report
+- model comparison report
+
+    make final-report-print VAL_BEST_METRIC=f1
+
+    # or just write the file (no printing)
+    make final-report VAL_BEST_METRIC=f1
+
+## Precision–Recall (PR) curve
+
+Compute PR curve + Average Precision (AP) on **test** for both models (using their **val-tuned** predictions).
+
+    make pr-curves-print VAL_BEST_METRIC=f1
+
+Outputs:
+- `reports/pr_curve_baseline.csv`, `reports/pr_curve_baseline.md`
+- `reports/pr_curve_rf.csv`, `reports/pr_curve_rf.md`

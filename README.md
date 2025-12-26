@@ -106,38 +106,28 @@ After running `make sweep-thresholds`, the best F1 on the current test split was
 
 ## Val-tuned threshold (baseline)
 
-Pick a decision threshold using the **val** split, then evaluate once on **test**.
+End-to-end (recommended): tune the decision threshold on **val**, then apply it on **test**.
 
-    # 1) create probabilities for val
-    PYTHONPATH=src uv run python -m mlproj.inference.predict_baseline \
-      --input data/processed/val.csv \
-      --out reports/predictions_val.csv \
-      --threshold 0.5
+    # uses caching (great for fresh clone or repeat runs)
+    make val-tune-baseline
 
-    # 2) sweep thresholds on val (reads probabilities from preds file)
-    make sweep-thresholds \
-      SWEEP_INPUT=data/processed/val.csv \
-      SWEEP_PREDS=reports/predictions_val.csv \
-      SWEEP_OUT=reports/val_threshold_sweep.csv \
-      TMIN=0.05 TMAX=0.95 TSTEP=0.05
+    # force a full rerun (cleans generated files first)
+    make val-tune-baseline-clean
 
-    # 3) apply the chosen threshold (default VAL_TUNED_THRESH=0.35) on test
-    make predict-baseline-valtuned
-    make eval-baseline-valtuned
-
-    cat reports/eval_valtuned_t0.35.json
+    cat reports/val_best_threshold.txt
+    cat reports/eval_valtuned_auto.json
 
 ### Notes
-- **Important:** `SWEEP_INPUT` and `SWEEP_PREDS` must match the same split (val with val).
-- This is the correct workflow: tune threshold on **val**, report final metrics on **test**.
-
-
+- This keeps the workflow correct: tune on **val**, report final metrics on **test**.
 ## Val-tuned threshold (baseline)
 
 End-to-end (recommended): tune the decision threshold on **val**, then apply it on **test**.
 
-    # runs: predict-val -> val-sweep -> val-best-threshold -> predict-baseline-valtuned-auto -> eval-baseline-valtuned-auto
+    # uses caching (great for fresh clone or repeat runs)
     make val-tune-baseline
+
+    # force a full rerun (cleans generated files first)
+    make val-tune-baseline-clean
 
     cat reports/val_best_threshold.txt
     cat reports/eval_valtuned_auto.json

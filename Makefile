@@ -1,4 +1,4 @@
-.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds predict-baseline-best eval-baseline-best predict-baseline-valtuned eval-baseline-valtuned predict-val val-sweep val-best-threshold predict-baseline-valtuned-auto eval-baseline-valtuned-auto val-tune-baseline
+.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds predict-baseline-best eval-baseline-best predict-baseline-valtuned eval-baseline-valtuned predict-val val-sweep val-best-threshold predict-baseline-valtuned-auto eval-baseline-valtuned-auto val-tune-baseline clean-val-tune val-tune-baseline-clean
 
 # Defaults for inference
 INPUT ?= data/processed/test.csv
@@ -162,4 +162,9 @@ $(VALTUNED_AUTO_EVAL): $(VALTUNED_AUTO_INPUT) $(VALTUNED_AUTO_PREDS)
 # --- end val-tuned auto ---
 
 val-tune-baseline: predict-val val-sweep val-best-threshold predict-baseline-valtuned-auto eval-baseline-valtuned-auto
+
+clean-val-tune:
+	rm -f reports/predictions_val.csv reports/val_threshold_sweep.csv reports/val_best_threshold.txt reports/predictions_baseline_valtuned_auto.csv reports/eval_valtuned_auto.json
+
+val-tune-baseline-clean: clean-val-tune val-tune-baseline
 

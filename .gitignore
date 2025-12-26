@@ -57,3 +57,4 @@ reports/predictions_rf_valtuned_auto.csv
 reports/eval_rf_valtuned_auto.json
 reports/rf_val_tuning_report.md
 reports/model_comparison.md
+\nreports/final_report.md\n

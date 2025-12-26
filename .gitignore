@@ -50,3 +50,10 @@ reports/val_tuning_report.md
 reports/predictions_rf.csv
 reports/eval_rf.json
 reports/rf_threshold_sweep.csv
+reports/predictions_rf_val.csv
+reports/rf_val_threshold_sweep.csv
+reports/rf_val_best_threshold.txt
+reports/predictions_rf_valtuned_auto.csv
+reports/eval_rf_valtuned_auto.json
+reports/rf_val_tuning_report.md
+reports/model_comparison.md

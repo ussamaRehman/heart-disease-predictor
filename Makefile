@@ -1,4 +1,4 @@
-.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds predict-baseline-best eval-baseline-best predict-baseline-valtuned eval-baseline-valtuned predict-val val-sweep val-best-threshold predict-baseline-valtuned-auto eval-baseline-valtuned-auto val-tune-baseline clean-val-tune val-tune-baseline-clean val-tune-report val-tune-baseline-report train-rf predict-rf eval-rf sweep-thresholds-rf
+.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds predict-baseline-best eval-baseline-best predict-baseline-valtuned eval-baseline-valtuned predict-val val-sweep val-best-threshold predict-baseline-valtuned-auto eval-baseline-valtuned-auto val-tune-baseline clean-val-tune val-tune-baseline-clean val-tune-report val-tune-baseline-report train-rf predict-rf eval-rf sweep-thresholds-rf rf-predict-val rf-val-sweep rf-val-best-threshold predict-rf-valtuned-auto eval-rf-valtuned-auto rf-val-tune-report clean-rf-val-tune val-tune-rf-report compare-models model-compare-report
 
 # Defaults for inference
 INPUT ?= data/processed/test.csv
@@ -32,6 +32,7 @@ VAL_SWEEP_PREDS ?= reports/predictions_val.csv
 VAL_SWEEP_OUT ?= reports/val_threshold_sweep.csv
 VAL_BEST_METRIC ?= f1
 VAL_TUNE_REPORT ?= reports/val_tuning_report.md
+COMPARE_REPORT ?= reports/model_comparison.md
 RF_MODEL_OUT ?= models/rf.joblib
 RF_REPORT_OUT ?= reports/rf_metrics.md
 RF_INPUT ?= data/processed/test.csv
@@ -39,6 +40,15 @@ RF_PREDS ?= reports/predictions_rf.csv
 RF_THRESH ?= 0.5
 RF_EVAL_OUT ?= reports/eval_rf.json
 RF_SWEEP_OUT ?= reports/rf_threshold_sweep.csv
+RF_VAL_SWEEP_INPUT ?= data/processed/val.csv
+RF_VAL_SWEEP_PREDS ?= reports/predictions_rf_val.csv
+RF_VAL_SWEEP_OUT ?= reports/rf_val_threshold_sweep.csv
+RF_VAL_BEST_THRESH_FILE ?= reports/rf_val_best_threshold.txt
+RF_VALTUNED_AUTO_INPUT ?= data/processed/test.csv
+RF_VALTUNED_AUTO_PREDS ?= reports/predictions_rf_valtuned_auto.csv
+RF_VALTUNED_AUTO_EVAL ?= reports/eval_rf_valtuned_auto.json
+RF_VAL_TUNE_REPORT ?= reports/rf_val_tuning_report.md
+
 VAL_BEST_THRESH_FILE ?= reports/val_best_threshold.txt
 VALTUNED_AUTO_INPUT ?= data/processed/test.csv
 VALTUNED_AUTO_PREDS ?= reports/predictions_baseline_valtuned_auto.csv
@@ -211,3 +221,55 @@ $(RF_SWEEP_OUT): $(RF_INPUT) $(RF_PREDS)
 	mkdir -p $(dir $@)
 	PYTHONPATH=src uv run python -m mlproj.evaluation.sweep_thresholds --input $(RF_INPUT) --preds $(RF_PREDS) --out $@ --t-min $(TMIN) --t-max $(TMAX) --t-step $(TSTEP)
 # --- RF TARGETS END ---
+
+rf-predict-val: $(RF_VAL_SWEEP_PREDS)
+
+$(RF_VAL_SWEEP_PREDS): $(RF_VAL_SWEEP_INPUT) $(RF_MODEL_OUT)
+	mkdir -p $(dir $@)
+	PYTHONPATH=src uv run python -m mlproj.inference.predict_rf --input $(RF_VAL_SWEEP_INPUT) --out $@ --model $(RF_MODEL_OUT) --threshold 0.5
+
+rf-val-sweep: $(RF_VAL_SWEEP_OUT)
+
+$(RF_VAL_SWEEP_OUT): $(RF_VAL_SWEEP_INPUT) $(RF_VAL_SWEEP_PREDS)
+	mkdir -p $(dir $@)
+	PYTHONPATH=src uv run python -m mlproj.evaluation.sweep_thresholds --input $(RF_VAL_SWEEP_INPUT) --preds $(RF_VAL_SWEEP_PREDS) --out $@ --t-min $(TMIN) --t-max $(TMAX) --t-step $(TSTEP)
+
+rf-val-best-threshold: $(RF_VAL_BEST_THRESH_FILE)
+
+$(RF_VAL_BEST_THRESH_FILE): $(RF_VAL_SWEEP_OUT)
+	mkdir -p $(dir $@)
+	PYTHONPATH=src uv run python -m mlproj.evaluation.pick_best_threshold --csv $(RF_VAL_SWEEP_OUT) --metric $(VAL_BEST_METRIC) > $@
+
+predict-rf-valtuned-auto: $(RF_VALTUNED_AUTO_PREDS)
+
+$(RF_VALTUNED_AUTO_PREDS): $(RF_VALTUNED_AUTO_INPUT) $(RF_MODEL_OUT) $(RF_VAL_BEST_THRESH_FILE)
+	mkdir -p $(dir $@)
+	THRESH=$$(cat $(RF_VAL_BEST_THRESH_FILE)); PYTHONPATH=src uv run python -m mlproj.inference.predict_rf --input $(RF_VALTUNED_AUTO_INPUT) --out $@ --model $(RF_MODEL_OUT) --threshold $$THRESH
+
+eval-rf-valtuned-auto: $(RF_VALTUNED_AUTO_EVAL)
+
+$(RF_VALTUNED_AUTO_EVAL): $(RF_VALTUNED_AUTO_INPUT) $(RF_VALTUNED_AUTO_PREDS)
+	mkdir -p $(dir $@)
+	PYTHONPATH=src uv run python -m mlproj.evaluation.eval_predictions --input $(RF_VALTUNED_AUTO_INPUT) --preds $(RF_VALTUNED_AUTO_PREDS) --out $@
+
+rf-val-tune-report: $(RF_VAL_TUNE_REPORT)
+
+$(RF_VAL_TUNE_REPORT): $(RF_VAL_SWEEP_OUT) $(RF_VAL_BEST_THRESH_FILE) $(RF_VALTUNED_AUTO_EVAL)
+	mkdir -p $(dir $@)
+	PYTHONPATH=src uv run python -m mlproj.evaluation.write_val_tuning_report --sweep-csv $(RF_VAL_SWEEP_OUT) --metric $(VAL_BEST_METRIC) --threshold-file $(RF_VAL_BEST_THRESH_FILE) --eval-json $(RF_VALTUNED_AUTO_EVAL) --out $@
+
+clean-rf-val-tune:
+	rm -f $(RF_VAL_SWEEP_PREDS) $(RF_VAL_SWEEP_OUT) $(RF_VAL_BEST_THRESH_FILE) $(RF_VALTUNED_AUTO_PREDS) $(RF_VALTUNED_AUTO_EVAL) $(RF_VAL_TUNE_REPORT)
+
+val-tune-rf-report: clean-rf-val-tune rf-predict-val rf-val-sweep rf-val-best-threshold predict-rf-valtuned-auto eval-rf-valtuned-auto rf-val-tune-report
+
+# --- model-compare targets ---
+model-compare-report: $(COMPARE_REPORT)
+
+$(COMPARE_REPORT): reports/eval_valtuned_auto.json reports/val_best_threshold.txt reports/eval_rf_valtuned_auto.json reports/rf_val_best_threshold.txt
+	mkdir -p $(dir $@)
+	PYTHONPATH=src uv run python -m mlproj.evaluation.compare_models --metric $(VAL_BEST_METRIC) --baseline-eval reports/eval_valtuned_auto.json --baseline-threshold-file reports/val_best_threshold.txt --rf-eval reports/eval_rf_valtuned_auto.json --rf-threshold-file reports/rf_val_best_threshold.txt --out $@
+
+compare-models: val-tune-baseline-report val-tune-rf-report model-compare-report
+# --- end model-compare targets ---
+

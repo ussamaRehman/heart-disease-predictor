@@ -152,10 +152,8 @@ End-to-end (recommended): sweep thresholds on **val**, pick the best metric, app
 
 Compare **val-tuned** baseline logistic regression vs Random Forest, using the same optimization metric (picked on **val**), and report the results on **test**.
 
-    # runs: val-tune-baseline-report + val-tune-rf-report + model-compare-report
-    make compare-models VAL_BEST_METRIC=f1
-
-    sed -n "1,200p" reports/model_comparison.md
+    # runs: val-tune-baseline-report + val-tune-rf-report + model-cpare-report
+    make compare-models-report VAL_BEST_METRIC=f1
 
 ### Notes
 - The winner depends on the metric you optimize (e.g., optimizing recall usually lowers precision).

@@ -1,4 +1,4 @@
-.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds predict-baseline-best eval-baseline-best predict-baseline-valtuned eval-baseline-valtuned predict-val val-sweep val-best-threshold predict-baseline-valtuned-auto eval-baseline-valtuned-auto val-tune-baseline clean-val-tune val-tune-baseline-clean val-tune-report val-tune-baseline-report train-rf predict-rf eval-rf sweep-thresholds-rf rf-predict-val rf-val-sweep rf-val-best-threshold predict-rf-valtuned-auto eval-rf-valtuned-auto rf-val-tune-report clean-rf-val-tune val-tune-rf-report compare-models model-compare-report
+.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds predict-baseline-best eval-baseline-best predict-baseline-valtuned eval-baseline-valtuned predict-val val-sweep val-best-threshold predict-baseline-valtuned-auto eval-baseline-valtuned-auto val-tune-baseline clean-val-tune val-tune-baseline-clean val-tune-report val-tune-baseline-report train-rf predict-rf eval-rf sweep-thresholds-rf rf-predict-val rf-val-sweep rf-val-best-threshold predict-rf-valtuned-auto eval-rf-valtuned-auto rf-val-tune-report clean-rf-val-tune val-tune-rf-report compare-models model-compare-report compare-models-report
 
 # Defaults for inference
 INPUT ?= data/processed/test.csv
@@ -272,4 +272,9 @@ $(COMPARE_REPORT): reports/eval_valtuned_auto.json reports/val_best_threshold.tx
 
 compare-models: val-tune-baseline-report val-tune-rf-report model-compare-report
 # --- end model-compare targets ---
+
+compare-models-report: compare-models
+	@echo
+	@echo '---- $(COMPARE_REPORT) ----'
+	@sed -n '1,200p' $(COMPARE_REPORT)
 

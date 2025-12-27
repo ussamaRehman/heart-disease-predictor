@@ -35,7 +35,7 @@ jobs:
         run: uv run pyright
 
       - name: Pytest
-        run: uv run pytest
+        run: PYTHONPATH=src uv run pytest
 
       - name: Report E2E
         run: make report-e2e VAL_BEST_METRIC=f1

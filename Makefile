@@ -372,6 +372,11 @@ scratch:
 .PHONY: report-e2e
 report-e2e:
 	$(MAKE) check
+	$(MAKE) data
+	$(MAKE) preprocess
+	$(MAKE) split
+	$(MAKE) train-baseline
+	$(MAKE) train-rf
 	$(MAKE) train-hgb
 	$(MAKE) final-report-print VAL_BEST_METRIC=$(VAL_BEST_METRIC)
 	$(MAKE) pr-curves-print VAL_BEST_METRIC=$(VAL_BEST_METRIC)

@@ -279,7 +279,7 @@ compare-models: val-tune-baseline-report val-tune-rf-report model-compare-report
 
 final-report: $(FINAL_REPORT) pr-curve-hgb
 
-$(FINAL_REPORT): reports/val_tuning_report.md reports/rf_val_tuning_report.md $(COMPARE_REPORT) reports/pr_curve_baseline.md reports/pr_curve_rf.md
+$(FINAL_REPORT): reports/val_tuning_report.md reports/rf_val_tuning_report.md $(COMPARE_REPORT) reports/pr_curve_baseline.md reports/pr_curve_rf.md reports/pr_curve_hgb.md
 	mkdir -p $(dir $@)
 	PYTHONPATH=src uv run python -m mlproj.evaluation.write_final_report --baseline-report reports/val_tuning_report.md --rf-report reports/rf_val_tuning_report.md --compare-report $(COMPARE_REPORT) --pr-baseline-md reports/pr_curve_baseline.md --pr-rf-md reports/pr_curve_rf.md --hgb-report reports/hgb_val_tuning_report.md --pr-hgb-md reports/pr_curve_hgb.md --out $@
 

@@ -277,7 +277,7 @@ $(COMPARE_REPORT): reports/eval_valtuned_auto.json reports/val_best_threshold.tx
 
 compare-models: val-tune-baseline-report val-tune-rf-report model-compare-report
 
-final-report: $(FINAL_REPORT)
+final-report: $(FINAL_REPORT) pr-curve-hgb
 
 $(FINAL_REPORT): reports/val_tuning_report.md reports/rf_val_tuning_report.md $(COMPARE_REPORT) reports/pr_curve_baseline.md reports/pr_curve_rf.md
 	mkdir -p $(dir $@)

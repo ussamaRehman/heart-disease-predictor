@@ -369,3 +369,9 @@ pr-curve-hgb-print: pr-curve-hgb
 .PHONY: scratch
 scratch:
 	PYTHONPATH=src uv run python tools/scratch.py
+.PHONY: report-e2e
+report-e2e:
+	$(MAKE) check
+	$(MAKE) train-hgb
+	$(MAKE) final-report-print VAL_BEST_METRIC=$(VAL_BEST_METRIC)
+	$(MAKE) pr-curves-print VAL_BEST_METRIC=$(VAL_BEST_METRIC)

@@ -273,7 +273,7 @@ model-compare-report: $(COMPARE_REPORT)
 
 $(COMPARE_REPORT): reports/eval_valtuned_auto.json reports/val_best_threshold.txt reports/eval_rf_valtuned_auto.json reports/rf_val_best_threshold.txt
 	mkdir -p $(dir $@)
-	PYTHONPATH=src uv run python -m mlproj.evaluation.compare_models --metric $(VAL_BEST_METRIC) --baseline-eval reports/eval_valtuned_auto.json --baseline-threshold-file reports/val_best_threshold.txt --rf-eval reports/eval_rf_valtuned_auto.json --rf-threshold-file reports/rf_val_best_threshold.txt --out $@
+	PYTHONPATH=src uv run python -m mlproj.evaluation.compare_models_3 --metric $(VAL_BEST_METRIC) --baseline-eval reports/eval_valtuned_auto.json --baseline-threshold-file reports/val_best_threshold.txt --rf-eval reports/eval_rf_valtuned_auto.json --rf-threshold-file reports/rf_val_best_threshold.txt --hgb-eval reports/eval_hgb_valtuned_auto.json --hgb-threshold-file reports/hgb_val_best_threshold.txt --out $@
 
 compare-models: val-tune-baseline-report val-tune-rf-report model-compare-report
 
@@ -281,7 +281,7 @@ final-report: $(FINAL_REPORT)
 
 $(FINAL_REPORT): reports/val_tuning_report.md reports/rf_val_tuning_report.md $(COMPARE_REPORT) reports/pr_curve_baseline.md reports/pr_curve_rf.md
 	mkdir -p $(dir $@)
-	PYTHONPATH=src uv run python -m mlproj.evaluation.write_final_report --baseline-report reports/val_tuning_report.md --rf-report reports/rf_val_tuning_report.md --compare-report $(COMPARE_REPORT) --pr-baseline-md reports/pr_curve_baseline.md --pr-rf-md reports/pr_curve_rf.md --out $@
+	PYTHONPATH=src uv run python -m mlproj.evaluation.write_final_report --baseline-report reports/val_tuning_report.md --rf-report reports/rf_val_tuning_report.md --compare-report $(COMPARE_REPORT) --pr-baseline-md reports/pr_curve_baseline.md --pr-rf-md reports/pr_curve_rf.md --hgb-report reports/hgb_val_tuning_report.md --pr-hgb-md reports/pr_curve_hgb.md --out $@
 
 final-report-print: compare-models-report final-report
 	@echo
@@ -307,8 +307,7 @@ $(PR_CURVE_RF_MD): predict-rf-valtuned-auto
 	mkdir -p reports/
 	PYTHONPATH=src uv run python -m mlproj.evaluation.pr_curve --input data/processed/test.csv --preds reports/predictions_rf_valtuned_auto.csv --out-csv $(PR_CURVE_RF_CSV) --out-md $@
 
-pr-curves: pr-curve-baseline pr-curve-rf
-
+pr-curves: pr-curve-baseline pr-curve-rf pr-curve-hgb
 pr-curves-print: pr-curves
 	@echo
 	@echo "---- $(PR_CURVE_BASELINE_MD) ----"
@@ -318,3 +317,52 @@ pr-curves-print: pr-curves
 	@sed -n "1,80p" $(PR_CURVE_RF_MD)
 # --- end pr-curve targets ---
 
+.PHONY: train-hgb
+train-hgb:
+	PYTHONPATH=src uv run python -m mlproj.models.train_hgb
+
+.PHONY: predict-hgb
+predict-hgb:
+	PYTHONPATH=src uv run python -m mlproj.inference.predict_hgb --input data/processed/test.csv --out reports/predictions_hgb_test.csv --threshold 0.5
+
+# --- HGB targets ---
+.PHONY: predict-hgb-val sweep-hgb-val pick-hgb-threshold predict-hgb-valtuned-auto eval-hgb-valtuned-auto hgb-val-tuning-report pr-curve-hgb pr-curve-hgb-print
+
+predict-hgb-val:
+	mkdir -p reports/
+	PYTHONPATH=src uv run python -m mlproj.inference.predict_hgb --input data/processed/val.csv --out reports/predictions_hgb_val.csv --threshold 0.5
+
+sweep-hgb-val: predict-hgb-val
+	mkdir -p reports/
+	PYTHONPATH=src uv run python -m mlproj.evaluation.sweep_thresholds --input data/processed/val.csv --preds reports/predictions_hgb_val.csv --out reports/hgb_val_threshold_sweep.csv --t-min 0.05 --t-max 0.95 --t-step 0.05
+
+pick-hgb-threshold: sweep-hgb-val
+	mkdir -p reports/
+	PYTHONPATH=src uv run python -m mlproj.evaluation.pick_best_threshold --csv reports/hgb_val_threshold_sweep.csv --metric $(VAL_BEST_METRIC) > reports/hgb_val_best_threshold.txt
+
+predict-hgb-valtuned-auto: pick-hgb-threshold
+	mkdir -p reports/
+	THRESH=$$(cat reports/hgb_val_best_threshold.txt); PYTHONPATH=src uv run python -m mlproj.inference.predict_hgb --input data/processed/test.csv --out reports/predictions_hgb_valtuned_auto.csv --threshold $$THRESH
+
+eval-hgb-valtuned-auto: predict-hgb-valtuned-auto
+	mkdir -p reports/
+	PYTHONPATH=src uv run python -m mlproj.evaluation.eval_predictions --input data/processed/test.csv --preds reports/predictions_hgb_valtuned_auto.csv --out reports/eval_hgb_valtuned_auto.json
+
+hgb-val-tuning-report: eval-hgb-valtuned-auto
+	mkdir -p reports/
+	PYTHONPATH=src uv run python -m mlproj.evaluation.write_val_tuning_report --sweep-csv reports/hgb_val_threshold_sweep.csv --metric $(VAL_BEST_METRIC) --threshold-file reports/hgb_val_best_threshold.txt --eval-json reports/eval_hgb_valtuned_auto.json --out reports/hgb_val_tuning_report.md
+
+pr-curve-hgb: predict-hgb-valtuned-auto
+	mkdir -p reports/
+	PYTHONPATH=src uv run python -m mlproj.evaluation.pr_curve --input data/processed/test.csv --preds reports/predictions_hgb_valtuned_auto.csv --out-csv reports/pr_curve_hgb.csv --out-md reports/pr_curve_hgb.md
+
+pr-curve-hgb-print: pr-curve-hgb
+	@echo
+	@echo "---- reports/pr_curve_hgb.md ----"
+	@sed -n "1,80p" reports/pr_curve_hgb.md
+
+# --- end HGB targets ---
+
+.PHONY: scratch
+scratch:
+	PYTHONPATH=src uv run python tools/scratch.py

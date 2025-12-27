@@ -317,6 +317,9 @@ pr-curves-print: pr-curves
 	@sed -n "1,80p" $(PR_CURVE_RF_MD)
 # --- end pr-curve targets ---
 
+
+	@echo "\n---- reports/pr_curve_hgb.md ----"
+	@cat reports/pr_curve_hgb.md
 .PHONY: train-hgb
 train-hgb:
 	PYTHONPATH=src uv run python -m mlproj.models.train_hgb

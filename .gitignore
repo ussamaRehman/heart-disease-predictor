@@ -68,3 +68,11 @@ reports/final_report.md
 # Local scratch (do not commit)
 /tools/scratch.py
 /tools/scratch_*.py
+# Generated HGB artifacts (do not commit)
+reports/predictions_hgb_*.csv
+reports/eval_hgb_*.json
+reports/hgb_*.json
+reports/hgb_*.md
+reports/hgb_val_*
+reports/pr_curve_hgb.csv
+reports/pr_curve_hgb.md

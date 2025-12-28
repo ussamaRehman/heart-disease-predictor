@@ -271,7 +271,7 @@ val-tune-rf-report: clean-rf-val-tune rf-predict-val rf-val-sweep rf-val-best-th
 
 model-compare-report: $(COMPARE_REPORT)
 
-$(COMPARE_REPORT): reports/eval_valtuned_auto.json reports/val_best_threshold.txt reports/eval_rf_valtuned_auto.json reports/rf_val_best_threshold.txt
+$(COMPARE_REPORT): reports/eval_valtuned_auto.json reports/val_best_threshold.txt reports/eval_rf_valtuned_auto.json reports/rf_val_best_threshold.txt hgb-val-tuning-report
 	mkdir -p $(dir $@)
 	PYTHONPATH=src uv run python -m mlproj.evaluation.compare_models_3 --metric $(VAL_BEST_METRIC) --baseline-eval reports/eval_valtuned_auto.json --baseline-threshold-file reports/val_best_threshold.txt --rf-eval reports/eval_rf_valtuned_auto.json --rf-threshold-file reports/rf_val_best_threshold.txt --hgb-eval reports/eval_hgb_valtuned_auto.json --hgb-threshold-file reports/hgb_val_best_threshold.txt --out $@
 

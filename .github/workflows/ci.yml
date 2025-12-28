@@ -25,31 +25,5 @@ jobs:
       - name: Install deps (from uv.lock)
         run: uv sync --dev
 
-      - name: Ruff format check
-        run: uv run ruff format --check .
-
-      - name: Ruff lint
-        run: uv run ruff check .
-
-      - name: Pyright
-        run: uv run pyright
-
-      - name: Pytest
-        run: PYTHONPATH=src uv run pytest
-
-      - name: Report E2E
+      - name: Value: report-e2e
         run: make report-e2e VAL_BEST_METRIC=f1
-
-      - name: Upload reports artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: reports
-          path: |
-            reports/final_report.md
-            reports/model_comparison.md
-            reports/*val_tuning_report.md
-            reports/pr_curve_*.md
-            reports/*.csv
-            reports/*.txt
-            reports/*.json

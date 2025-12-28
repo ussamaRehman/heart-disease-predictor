@@ -380,3 +380,9 @@ report-e2e:
 	$(MAKE) train-hgb
 	$(MAKE) final-report-print VAL_BEST_METRIC=$(VAL_BEST_METRIC)
 	$(MAKE) pr-curves-print VAL_BEST_METRIC=$(VAL_BEST_METRIC)
+
+# Alias rules: allow Make to build HGB PR curve files when referenced as prerequisites
+reports/pr_curve_hgb.md: pr-curve-hgb
+	@true
+reports/pr_curve_hgb.csv: pr-curve-hgb
+	@true

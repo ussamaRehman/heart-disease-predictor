@@ -1,182 +1,69 @@
-# Heart Disease Predictor Model
+# Heart Disease Predictor (reproducible ML pipeline)
 
-[![CI](https://github.com/ussamaRehman/heart-disease-predictor/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/ussamaRehman/heart-disease-predictor/actions/workflows/ci.yml)
-
-A production-minded ML project scaffold (env + quality gates + CI) for a heart disease risk prediction model.
-Modeling + data pipeline will be added next.
+A small, production-style ML project that predicts heart disease using the UCI Heart Disease dataset.
+Includes a reproducible pipeline, threshold tuning on a validation set, model comparison, PR curve summaries,
+and a final aggregated report.
 
 ## Quickstart
 
-### 1) Setup
+### 1) Install dependencies
+This repo uses `uv` for fast, pinned installs.
+
+- Install `uv` (once): https://docs.astral.sh/uv/
+- Then run:
 
     uv sync --dev
 
-### 2) Run checks (format, lint, types, tests)
+### 2) Run the end-to-end value pipeline
+This runs checks + trains models + generates reports:
 
-    make check
+    make report-e2e VAL_BEST_METRIC=f1
 
-## Repo structure (current)
-- `src/` — project code (will contain data/features/models pipeline)
-- `tests/` — tests (currently a smoke test)
-- `data/` — raw/processed/external (ignored by git; folders kept via `.gitkeep`)
-- `models/` — saved artifacts (ignored by git; folder kept via `.gitkeep`)
-- `reports/` — figures + documentation outputs (ignored by git; folder kept via `.gitkeep`)
-^- `notebooks/` — exploration notebooks (folder kept via `.gitkeep`)
-- `docs/` — notes/decisions (folder kept via `.gitkeep`)
+## What this project produces
 
-## Tooling
-- Python: pinned via `.python-version` (pyenv)
-- Dependency management: `uv` + `pyproject.toml` + `uv.lock`
-- Quality gates: Ruff (format + lint), Pyright (types), Pytest (tests)
-- Local gates: pre-commit
-- CI: GitHub Actions (`.github/workflows/ci.yml`)
+All outputs are written to `reports/`. The main entry point is:
 
-## Notes
-This is a portfolio project scaffold. It is not a medical device and is not intended for diagnostic use.
+- `reports/final_report.md` (aggregates everything)
 
+Also included:
+- `reports/model_comparison.md` (baseline vs RF vs HGB at each model’s val-tuned threshold)
+- `reports/*val_tuning_report.md` (chosen threshold on val + resulting test metrics)
+- `reports/pr_curve_*.md` and `reports/pr_curve_*.csv` (Precision–Recall summaries + curve data)
+- `reports/*.json` (machine-readable metrics)
+- `reports/predictions_*.csv` (predictions for val/test runs)
 
-## Run end-to-end (single command)
+## How evaluation works (high level)
 
-```bash
-make ml
-```
+- The model outputs probabilities.
+- We select the best classification threshold on the **validation set** based on `VAL_BEST_METRIC` (default: `f1`).
+- We then report metrics on the **test set** at that chosen threshold.
+- PR curves are generated to summarize the precision/recall tradeoff.
 
-### Outputs
-- Model artifact: `models/baseline_logreg.joblib`
-- Metrics report: `reports/baseline_metrics.md`
-- Processed data + splits: `data/processed/heart.csv`, `data/processed/train.csv`, `data/processed/val.csv`, `data/processed/test.csv`
+## Make targets (useful ones)
 
-## Docs
-- Decision Log: `docs/decisions.md`
-- Model Card: `reports/model_card.md`
+- `make check` — format/lint/typecheck/tests
+- `make data` — download dataset
+- `make preprocess` — build processed dataset
+- `make split` — train/val/test split
+- `make train-baseline` / `make train-rf` / `make train-hgb` — train models + write metric reports
+- `make final-report-print VAL_BEST_METRIC=f1` — generate final report
+- `make pr-curves-print VAL_BEST_METRIC=f1` — generate PR summaries
+- `make report-e2e VAL_BEST_METRIC=f1` — **one-command end-to-end “value step”**
 
-## Run inference (baseline)
+## CI
 
-    # default (uses test split)
-    make predict-baseline
+GitHub Actions runs the same value step:
 
-    # customize input/output/threshold
-    make predict-baseline INPUT=data/processed/val.csv OUT=reports/predictions_val.csv THRESH=0.7
+- `make report-e2e VAL_BEST_METRIC=f1`
 
-### Output
-- Predictions CSV (gitignored): `reports/predictions_*.csv`
+It also uploads the `reports/` outputs as an artifact (even if the job fails),
+so you can download `final_report.md` and related files directly from the workflow run.
 
-### Notes
-- Inference is cached by Make via `OUT`. If it says "Nothing to be done", the output is already up-to-date.
-- To force regeneration: `make clean-preds` (or delete the OUT file).
+## Notes / limitations
 
-## Evaluate predictions (baseline)
+- This is a small dataset; metrics can vary with random seeds/splits.
+- This repo emphasizes **clean workflow + reproducibility** over state-of-the-art modeling.
 
-    # evaluate default baseline predictions vs labeled test split
-    make eval-baseline
+## License
 
-    # customize paths
-    make eval-baseline EVAL_INPUT=data/processed/val.csv EVAL_PREDS=reports/predictions_val.csv EVAL_OUT=reports/val_eval.json
-
-### Output
-- Metrics JSON (gitignored): `reports/*eval*.json`
-
-## Sweep thresholds (baseline)
-
-    # generate threshold_sweep.csv for baseline predictions
-    make sweep-thresholds
-
-    # customize input/preds + sweep range
-    make sweep-thresholds SWEEP_INPUT=data/processed/val.csv SWEEP_PREDS=reports/predictions_val.csv SWEEP_OUT=reports/val_threshold_sweep.csv TMIN=0.1 TMAX=0.9 TSTEP=0.05
-
-### Output
-- Threshold sweep CSV (gitignored): `reports/threshold_sweep.csv`
-
-## Best threshold (baseline)
-
-After running `make sweep-thresholds`, the best F1 on the current test split was at threshold **0.70**.
-
-    # generate predictions using BEST_THRESH (default: 0.70)
-    make predict-baseline-best
-
-    # evaluate those predictions (writes JSON)
-    make eval-baseline-best
-
-    cat reports/eval_thresh_0.70.json
-
-### Notes
-- In a real project, you should tune the threshold on **val** and only report final numbers on **test**.
-
-
-
-## Val-tuned threshold (baseline)
-
-End-to-end (recommended): tune the decision threshold on **val**, then apply it on **test**.
-
-    # full rerun + write a markdown report (recommended)
-    make val-tune-baseline-report
-
-    sed -n "1,160p" reports/val_tuning_report.md
-
-### Notes
-- This keeps the workflow correct: tune on **val**, report final metrics on **test**.
-## Val-tuned threshold (baseline)
-
-End-to-end (recommended): tune the decision threshold on **val**, then apply it on **test**.
-
-    # full rerun + write a markdown report (recommended)
-    make val-tune-baseline-report
-
-    sed -n "1,160p" reports/val_tuning_report.md
-
-### Notes
-- This keeps the workflow correct: tune on **val**, report final metrics on **test**.
-
-## Random Forest (RF)
-
-Train + evaluate RF on the current splits.
-
-    make train-rf
-    make predict-rf RF_INPUT=data/processed/test.csv
-    make eval-rf RF_INPUT=data/processed/test.csv
-    cat reports/eval_rf.json
-
-### Val-tuned threshold (RF)
-
-End-to-end (recommended): sweep thresholds on **val**, pick the best metric, apply once on **test**, and write a report.
-
-    # full rerun + markdown report (recommended)
-    make val-tune-rf-report VAL_BEST_METRIC=f1
-
-    sed -n "1,200p" reports/rf_val_tuning_report.md
-
-### Notes
-- Threshold tuning can change the precision/recall tradeoff a lot (e.g., optimizing recall usually lowers precision).
-
-## Model comparison (baseline vs RF)
-
-Compare **val-tuned** baseline logistic regression vs Random Forest, using the same optimization metric (picked on **val**), and report the results on **test**.
-
-    # runs: val-tune-baseline-report + val-tune-rf-report + model-compare-report
-    make compare-models-report VAL_BEST_METRIC=f1
-
-### Notes
-- The winner depends on the metric you optimize (e.g., optimizing recall usually lowers precision).
-- Thresholds are tuned on **val**; the comparison table reports metrics on **test**.\n\n## Final report\n\nGenerate a single markdown file that aggregates:\n- baseline val-tuning report\n- RF val-tuning report\n- model comparison report\n\    make final-report-print VAL_BEST_METRIC=f1\n\n    # or just write the file (no printing)\n    make final-report VAL_BEST_METRIC=f1\n\n
-
-## Final report
-
-Generate a single markdown file that aggregates:
-- baseline val-tuning report
-- RF val-tuning report
-- model comparison report
-
-    make final-report-print VAL_BEST_METRIC=f1
-
-    # or just write the file (no printing)
-    make final-report VAL_BEST_METRIC=f1
-
-## Precision–Recall (PR) curve
-
-Compute PR curve + Average Precision (AP) on **test** for both models (using their **val-tuned** predictions).
-
-    make pr-curves-print VAL_BEST_METRIC=f1
-
-Outputs:
-- `reports/pr_curve_baseline.csv`, `reports/pr_curve_baseline.md`
-- `reports/pr_curve_rf.csv`, `reports/pr_curve_rf.md`
+MIT

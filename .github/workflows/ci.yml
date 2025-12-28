@@ -7,7 +7,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -18,12 +17,33 @@ jobs:
           python-version-file: .python-version
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v4
         with:
           enable-cache: true
 
       - name: Install deps (from uv.lock)
         run: uv sync --dev
 
-      - name: Value - report-e2e
+      - name: Value: report-e2e
         run: make report-e2e VAL_BEST_METRIC=f1
+
+      - name: List reports (debug)
+        if: always()
+        run: |
+          ls -lah reports || true
+
+      - name: Upload reports artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          if-no-files-found: warn
+          path: |
+            reports/final_report.md
+            reports/model_comparison.md
+            reports/*val_tuning_report.md
+            reports/pr_curve_*.md
+            reports/*.csv
+            reports/*.txt
+            reports/*.json
+

@@ -24,7 +24,7 @@ jobs:
       - name: Install deps (from uv.lock)
         run: uv sync --dev
 
-      - name: Value: report-e2e
+      - name: "Value: report-e2e"
         run: make report-e2e VAL_BEST_METRIC=f1
 
       - name: List reports (debug)

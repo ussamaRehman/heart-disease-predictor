@@ -1,0 +1,55 @@
+name: release-reports
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-release-bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python (from .python-version)
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Install deps (from uv.lock)
+        run: uv sync --dev --frozen
+
+      - name: "Value: report-e2e"
+        run: make report-e2e VAL_BEST_METRIC=f1
+
+      - name: Build reports bundle
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          bundle="reports_bundle_${tag}.zip"
+          mkdir -p dist/reports
+          find reports -maxdepth 1 -type f \( \
+            -name "final_report.md" \
+            -o -name "model_comparison.md" \
+            -o -name "*val_tuning_report.md" \
+            -o -name "pr_curve_*.md" \
+            -o -name "*.json" \
+            -o -name "*.csv" \
+            -o -name "*.txt" \
+          \) -print0 | xargs -0 -I{} cp {} dist/reports/
+          (cd dist && zip -r "../${bundle}" "reports")
+          ls -lah "${bundle}"
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: reports_bundle_${{ github.ref_name }}.zip

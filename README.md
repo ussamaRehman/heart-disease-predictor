@@ -22,12 +22,13 @@ This runs checks + trains models + generates reports:
 
     make report-e2e VAL_BEST_METRIC=f1
 
-## Results snapshot (committed)
+## Demo / proof
 
-For a quick, read-only summary of the best model metrics:
+For a quick, read-only demo path without committing generated reports:
 
 - `docs/results_snapshot.md`
 - `reports/model_card.md`
+- Latest Release (download the `reports_bundle_<tag>.zip` asset): `../../releases/latest`
 
 ## What this project produces
 

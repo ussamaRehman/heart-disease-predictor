@@ -12,3 +12,4 @@ Full details are in `reports/model_comparison.md` and `reports/final_report.md`.
 Notes:
 - Threshold is selected on the validation set; metrics above are on the test set.
 - `VAL_BEST_METRIC` is set to `f1` in the default pipeline.
+- GitHub Actions may show non-blocking annotation warnings from tooling; they do not affect results.

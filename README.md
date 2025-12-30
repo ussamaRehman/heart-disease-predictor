@@ -19,6 +19,13 @@ This runs checks + trains models + generates reports:
 
     make report-e2e VAL_BEST_METRIC=f1
 
+## Results snapshot (committed)
+
+For a quick, read-only summary of the best model metrics:
+
+- `docs/results_snapshot.md`
+- `reports/model_card.md`
+
 ## What this project produces
 
 All outputs are written to `reports/`. The main entry point is:

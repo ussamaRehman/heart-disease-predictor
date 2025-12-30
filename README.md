@@ -1,5 +1,8 @@
 # Heart Disease Predictor (reproducible ML pipeline)
 
+![CI](../../actions/workflows/ci.yml/badge.svg?branch=master)
+
+
 A small, production-style ML project that predicts heart disease using the UCI Heart Disease dataset.
 Includes a reproducible pipeline, threshold tuning on a validation set, model comparison, PR curve summaries,
 and a final aggregated report.

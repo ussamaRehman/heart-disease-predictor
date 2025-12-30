@@ -3,7 +3,7 @@ PR_CURVE_BASELINE_CSV ?= reports/pr_curve_baseline.csv
 PR_CURVE_BASELINE_MD  ?= reports/pr_curve_baseline.md
 PR_CURVE_RF_CSV       ?= reports/pr_curve_rf.csv
 PR_CURVE_RF_MD        ?= reports/pr_curve_rf.md
-.PHONY: setup fmt lint type test check data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds predict-baseline-best eval-baseline-best predict-baseline-valtuned eval-baseline-valtuned predict-val val-sweep val-best-threshold predict-baseline-valtuned-auto eval-baseline-valtuned-auto val-tune-baseline clean-val-tune val-tune-baseline-clean val-tune-report val-tune-baseline-report train-rf predict-rf eval-rf sweep-thresholds-rf rf-predict-val rf-val-sweep rf-val-best-threshold predict-rf-valtuned-auto eval-rf-valtuned-auto rf-val-tune-report clean-rf-val-tune val-tune-rf-report compare-models model-compare-report compare-models-report final-report final-report-print pr-curve-baseline pr-curve-rf pr-curves pr-curves-print
+.PHONY: setup fmt fmt-check lint type test check check-ci data check-data preprocess split pipeline train-baseline ml predict-baseline clean-preds eval-baseline sweep-thresholds predict-baseline-best eval-baseline-best predict-baseline-valtuned eval-baseline-valtuned predict-val val-sweep val-best-threshold predict-baseline-valtuned-auto eval-baseline-valtuned-auto val-tune-baseline clean-val-tune val-tune-baseline-clean val-tune-report val-tune-baseline-report train-rf predict-rf eval-rf sweep-thresholds-rf rf-predict-val rf-val-sweep rf-val-best-threshold predict-rf-valtuned-auto eval-rf-valtuned-auto rf-val-tune-report clean-rf-val-tune val-tune-rf-report compare-models model-compare-report compare-models-report final-report final-report-print pr-curve-baseline pr-curve-rf pr-curves pr-curves-print
 
 # Defaults for inference
 INPUT ?= data/processed/test.csv
@@ -67,6 +67,9 @@ setup:
 fmt:
 	uv run ruff format .
 
+fmt-check:
+	uv run ruff format --check .
+
 lint:
 	uv run ruff check .
 
@@ -77,6 +80,8 @@ test:
 	PYTHONPATH=src uv run pytest
 
 check: fmt lint type test
+
+check-ci: fmt-check lint type test
 
 data: data/raw/uci_heart_disease.csv
 
@@ -315,11 +320,10 @@ pr-curves-print: pr-curves
 	@echo
 	@echo "---- $(PR_CURVE_RF_MD) ----"
 	@sed -n "1,80p" $(PR_CURVE_RF_MD)
+	@echo
+	@echo "---- reports/pr_curve_hgb.md ----"
+	@sed -n "1,80p" reports/pr_curve_hgb.md
 # --- end pr-curve targets ---
-
-
-	@echo "\n---- reports/pr_curve_hgb.md ----"
-	@cat reports/pr_curve_hgb.md
 .PHONY: train-hgb
 train-hgb:
 	PYTHONPATH=src uv run python -m mlproj.models.train_hgb
@@ -373,6 +377,7 @@ scratch:
 report-e2e:
 	$(MAKE) check
 	$(MAKE) data
+	$(MAKE) check-data
 	$(MAKE) preprocess
 	$(MAKE) split
 	$(MAKE) train-baseline

@@ -22,7 +22,10 @@ jobs:
           enable-cache: true
 
       - name: Install deps (from uv.lock)
-        run: uv sync --dev
+        run: uv sync --dev --frozen
+
+      - name: "Checks: check-ci"
+        run: make check-ci
 
       - name: "Value: report-e2e"
         run: make report-e2e VAL_BEST_METRIC=f1
@@ -41,9 +44,10 @@ jobs:
           path: |
             reports/final_report.md
             reports/model_comparison.md
+            reports/model_card.md
             reports/*val_tuning_report.md
             reports/pr_curve_*.md
+            reports/*_metrics.md
             reports/*.csv
             reports/*.txt
             reports/*.json
-
